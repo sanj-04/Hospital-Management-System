@@ -1,0 +1,180 @@
+
+<html>
+<head>
+    {% load static %}
+    <title>table</title>
+    <link rel="stylesheet" href="{% static 'css/apttb.css' %}">
+</head>
+
+<datalist id="id_patients_list">
+    {% for patient in patients %}
+    <option value="{{patient.id}}">{{patient.name}}</option>
+    {% endfor %}
+</datalist>
+
+<body onload=""><!-- loadData() -->
+    <button id="insertBtn">Insert</button>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient ID</th>
+                    <th>Patient Name</th>
+                    <th>Appointment Date and Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for appointment in appointments %}
+                <tr>
+                    <td>{{appointment.patient_id}}</td>
+                    <td>{{appointment.patient_name}}</td>
+                    <td>{{appointment.appointment_date_time_str}}</td>
+                    <td>{{appointment.appointment_status}}</td>
+                    <td hidden>{{appointment.appointment_id}}</td>
+                    <td>
+                        <button onclick="showUpdateForm(this);"
+                            data-date_time="{{appointment.appointment_date_time}}"
+                            data-patient_id="{{appointment.patient_id}}"
+                            data-appointment_id="{{appointment.appointment_id}}">Update</button>
+                        <button onclick="confirmDelete(this);" data-appointment_id="{{appointment.appointment_id}}">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <form id="updateForm">
+        <label for="id_patient_update">Patient:</label>
+        <input type="text" name="patient" autocomplete="off" class="textinput textInput form-control" id="id_patient_update" disabled>
+        <br><br>
+        <label for="id_data_time_update">Appointment Date and Time:</label>
+        <input type="datetime-local" id="id_data_time_update" class="textinput textInput form-control">
+        <br>
+        <input type="hidden" id="id_appointment_id_update" class="textinput textInput form-control">
+        <input type="hidden" id="id_patient_id_update" class="textinput textInput form-control">
+        <button type="button" onclick="updateRow()">Update</button>
+        <button type="button" onclick="hideUpdateForm()">Cancel</button>
+    </form>
+
+    <form id="insertForm" style="display: none;">
+        <!-- <label>Patient ID: <input type="text" id="insertPatientID"></label><br> -->
+        <label for="id_patient_insert">Patient:</label>
+        <input type="text" name="patient" autocomplete="off" maxlength="150" class="textinput textInput form-control" id="id_patient_insert" list="id_patients_list">
+        <br><br>
+        <label for="id_date_time_insert">Appointment Date and Time:</label>
+        <input type="datetime-local" id="id_date_time_insert" class="textinput textInput form-control">
+        <br>
+        <button type="button" onclick="insertRow()">Insert</button>
+        <button type="button" onclick="hideInsertForm()">Cancel</button>
+    </form>
+
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <p id="alertMessage"></p>
+            <button onclick="closeModal()">Cancel</button>
+            <button id="confirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+    <script src="{% static 'javascript/apttb.js' %}"></script>
+    <script src="{% static 'javascript/jquery-3.3.1.min.js' %}"></script>
+    <script type="application/javascript">
+        function insertRow() {
+            let patient = document.getElementById('id_patient_insert').value;
+            let date_time = document.getElementById('id_date_time_insert').value;
+            $.ajax({
+                url : "{% url 'dataStorage:apttb' %}",
+                type : "POST",
+                data : {
+                    'patient': patient,
+                    'date_time': date_time,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                },
+                success : function(HttpResponse,textMsg, xhr) {
+                    window.scrollTo(0, 0);
+                    hideInsertForm();
+                    location.reload();
+                },
+                error : function(xhr, errmsg, err) {
+                    console.log(xhr);
+                    window.scrollTo(0, 0);
+                    alert('Please fill in all fields.');
+                },
+                statusCode: {
+                    401: function() {
+                        window.scrollTo(0, 0);
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        function updateRow() {
+            let date_time = document.getElementById('id_data_time_update').value;
+            let appointment_id = document.getElementById('id_appointment_id_update').value;
+            $.ajax({
+                url : "{% url 'dataStorage:apttb' %}",
+                type : "PUT",
+                data : {
+                    'date_time': date_time,
+                    'appointment_id': appointment_id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                },
+                success : function(HttpResponse,textMsg, xhr) {
+                    window.scrollTo(0, 0);
+                    hideUpdateForm();
+                    location.reload();
+                },
+                error : function(xhr, errmsg, err) {
+                    console.log(xhr);
+                    window.scrollTo(0, 0);
+                    alert("Patient ID not found. Unable to update the row.");
+                },
+                statusCode: {
+                    401: function() {
+                        window.scrollTo(0, 0);
+                        location.reload();
+                    }
+                }
+            });
+        }
+        
+        function deleteRow(button) {
+            let appointment_id = button.getAttribute('data-appointment_id');
+            $.ajax({
+                url : "{% url 'dataStorage:apttb' %}",
+                type : "DELETE",
+                data : {
+                    'appointment_id': appointment_id,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                },
+                success : function(HttpResponse,textMsg, xhr) {
+                    window.scrollTo(0, 0);
+                    location.reload();
+                },
+                error : function(xhr, errmsg, err) {
+                    window.scrollTo(0, 0);
+                    location.reload();
+                },
+                statusCode: {
+                    401: function() {
+                        window.scrollTo(0, 0);
+                        location.reload();
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

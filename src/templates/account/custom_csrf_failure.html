@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block scripts %}
+<style>
+    #loading {
+        background: #cccbcb;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.9;
+        /* text-align: center; */
+        /* vertical-align: middle; */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        color: red;
+        z-index: 100;
+    }
+
+    @keyframes blink {50% { color: transparent }}
+    .loader__dot { animation: 1s blink infinite }
+    .loader__dot:nth-child(2) { animation-delay: 250ms }
+    .loader__dot:nth-child(3) { animation-delay: 500ms }
+</style>
+{% endblock %}
+
+{% block title %}CSRF Error{% endblock %}
+
+{% block content %}
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% endif%} 
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        {{form.non_field_errors}}
+    </div>
+    {% endif %}
+
+    <script>
+        $('body').append('<div id="loading">{{reason}}: Reloading<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></span></div>');
+        setTimeout( function() {
+            window.location.assign(window.location.href);
+        }, 500);
+    </script>
+
+{% endblock %}

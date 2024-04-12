@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load static %}
+{% block scripts %}
+
+    <style>
+        #container {
+            margin:20px;
+        }
+        .header {
+            font-weight:bold;
+            font-size:30px;
+        }
+
+        ::-webkit-scrollbar {
+          width: 0.1px;
+        }
+        ::-webkit-scrollbar-track {
+          -webkit-box-shadow: inset 0 0 0.1px rgba(1,0,0,0.3);
+          border-radius: 0.1px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          border-radius: 0.1px;
+          -webkit-box-shadow: inset 0 0 0.1px rgba(1,0,0,0.5);
+        }
+
+        [data-notify="progressbar"]
+			{
+				margin-bottom: 0px;
+				position: absolute;
+				bottom: 0px;
+				left: 0px;
+				width: 100%;
+				height: 5px;
+			}
+
+      #loading {
+        background: #cccbcb;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.9;
+        /* text-align: center; */
+        /* vertical-align: middle; */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+      }
+
+      @keyframes blink {50% { color: transparent }}
+      .loader__dot { animation: 1s blink infinite }
+      .loader__dot:nth-child(2) { animation-delay: 250ms }
+      .loader__dot:nth-child(3) { animation-delay: 500ms }
+    </style>
+
+{% endblock %}
+{% block title %}Time based OTP{% endblock %}
+{% block content %}
+<div class="text-center">
+</div>
+<div id='container'>
+  <div class="row">
+    <div class="col-12 header center">
+      Configure Time Based OTP Device
+    </div>
+  </div>
+<h5>We have added an additional security key during Login Process (One Time Password) which is required along with your username and password.
+To Reduce the security risk of hacking as this is on the public internet.
+Kindly go through the below steps to enable the Application to generate the OTP on your Android or iPhone.</h5>
+<br>
+<p>Required Application on Android/iPhone : <strong>Microsoft Authenticator or Google Authenticator</strong></p>
+
+<h6>Steps for Android Microsoft Authenticator [<a target="_blank" href="https://support.microsoft.com/en-us/account-billing/download-and-install-the-microsoft-authenticator-app-351498fc-850a-45da-b7b6-27e523b8702a">Online Guide</a>]:</h6>
+<li> Install Microsoft Authenticator Application from Google Play Store. [<a target="_blank" href="https://play.google.com/store/apps/details?id=com.azure.authenticator">Store Link</a>] </li>
+<li> Complete the Intial Office Account Login on the Application. </li>
+<li> Select Last option [Verified IDs] from the botton panel </li>
+<li> Select Scan a QR code option and provide camera access if prompted. </li>
+<li> Now Scan the QR code from this page below. [<a href="#qrcode">QR Code</a>]</li>
+<li> Go to Authenticator section and check for a new Record added as . </li>
+<li> Use the OTP on the Login Screen. [<a target="_blank" href="{% url 'dataStorage:home' %}">CRM</a>] </li>
+<br>
+<h6>Steps for iPhone Microsoft Authenticator [<a target="_blank" href="https://support.microsoft.com/en-us/account-billing/download-and-install-the-microsoft-authenticator-app-351498fc-850a-45da-b7b6-27e523b8702a">Online Guide</a>]:</h6>
+<li>Install Microsoft Authenticator Application from App Store. [<a target="_blank" href="https://apps.apple.com/us/app/microsoft-authenticator/id983156458">Store Link</a>]</li>
+<li>Complete Intial Office Account Login on the Application.</li>
+<li>Select Last option [Verified IDs] from the botton panel</li>
+<li>Select Scan a QR code option and provide camera access if prompted.</li>
+<li>Now Scan the QR code from this page below. [<a href="#qrcode">QR Code</a>]</li>
+<li>Go to Authenticator section and check for a new Record added as .</li>
+<li>Use the OTP on the Login Screen. [<a target="_blank" href="{% url 'dataStorage:home' %}">CRM</a>]</li>
+<br>
+<h6>Steps for Android Google Authenticator [<a target="_blank" href="https://www.wikihow.com/Install-Google-Authenticator">Online Guide</a>]:</h6>
+<li>Install Google Authenticator Application from Google Play Store. [<a target="_blank" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">Store Link</a>]</li>
+<li>Select Add icon bottom right corner, and select Scan a QR Code, provide camera access if prompted.</li>
+<li>Now Scan the QR code from this page below. [<a href="#qrcode">QR Code</a>]</li>
+<li>Confirm the added Account Record as .</li>
+<li>Use the OTP on the Login Screen. [<a target="_blank" href="{% url 'dataStorage:home' %}">CRM</a>]</li>
+<br>
+<h6>Steps for iPhone Google Authenticator [<a target="_blank" href="https://www.wikihow.com/Install-Google-Authenticator">Online Guide</a>]:</h6>
+<li>Install Google Authenticator Application from App Store. [<a target="_blank" href="https://apps.apple.com/us/app/google-authenticator/id388497605">Store Link</a>]</li>
+<li>Select Add icon bottom right corner, and select Scan a QR Code, provide camera access if prompted.</li>
+<li>Now Scan the QR code from this page below. [<a href="#qrcode">QR Code</a>]</li>
+<li>Confirm the added Account Record as .</li>
+<li>Use the OTP on the Login Screen. [<a target="_blank" href="{% url 'dataStorage:home' %}">CRM</a>]</li>
+
+<br>
+QR code:
+<br>
+<img src="data:image/png;base64,{{qrCode}}" id="qrcode" oncontextmenu="return false;" style="filter: blur(5px);" title="Click to View" data-toggle="tooltip" data-bs-placement="right" onclick="javascript:this.style.removeProperty('filter'); this.setAttribute('data-bs-original-title', 'Scan')">
+
+<br>
+<br>
+<div class="row">
+  <div class="col-2">
+    <label for="id_totp">Time Based OTP : </label>
+    <input type="number" id="id_totp" class="form-control" maxlength="6" max="999999" min="0" oninput="validity.valid||(value='');" pattern="[0-9]{6}">
+  </div>
+  <div class="col-2">
+    <br>
+    <button type="button" class="btn btn-outline-primary" id="verify">Verify</button>
+  </div>
+</div>
+</div>
+
+<script type="application/javascript">
+  $(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip({html:true});
+
+    document.querySelector('#qrcode').ondragstart = () => {
+      return false;
+    };
+
+    $("#verify").on("click", function(){
+      ajaxSetup();
+      $('body').append('<div id="loading">Processing<span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></span></div>')
+      $.ajax({
+        url : "{% url 'dataStorage:configureDevice' %}",
+        type : "POST",
+        data : {
+          'totp': document.getElementById('id_totp').value,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success : function(HttpResponse,textMsg, xhr) {
+          clearTimeout(window.timeElement);
+          checkTime( new Date(new Date().setMinutes(new Date().getMinutes() + 24)) );
+          console.log("success", textMsg);
+          document.getElementById("loading").remove();
+          location.reload();
+        },
+        error : function(xhr, errmsg, err) {
+          setMessage(errmsg, "danger");
+          document.getElementById("loading").remove();
+        },
+        statusCode: {
+          401: function() {
+            checkTime( new Date(new Date().setMinutes(new Date().getMinutes() - 5)) );
+            setMessage("Session Timeout", "warning");
+            window.scrollTo(0, 0);
+          }
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}
