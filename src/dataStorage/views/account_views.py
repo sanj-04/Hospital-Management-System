@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.http.request import QueryDict
 from datetime import datetime
-from dataStorage.models import Patient, Appointment
+from dataStorage.models import Patient, Appointment, Doctor
 
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, **kwargs):
@@ -91,7 +91,7 @@ def adminpg(request):
     }
     return render(request, 'adminpg.html', context)
 
-
+@login_required
 def apttb(request):
     if request.method == "GET" and not request.is_ajax():
         appointmentObjs = Appointment.objects.all()
@@ -115,7 +115,6 @@ def apttb(request):
 
     elif request.method == "POST" and request.is_ajax():
         patient = request.POST.get('patient')
-        print(f"{request.POST=}, {patient=}")
         try:
             patientObj = Patient.objects.get(
                 id = int(patient)
@@ -126,8 +125,9 @@ def apttb(request):
             )
         date_time = request.POST.get('date_time')
         date_timeObj = datetime.strptime(date_time, "%Y-%m-%dT%H:%M")
+        doctorObj = Doctor.objects.get(user = request.user)
         appointmentObj = Appointment.objects.create(
-            doctor_id = request.user.id,
+            doctor = doctorObj,
             patient = patientObj,
             date_time = date_timeObj,
         )
