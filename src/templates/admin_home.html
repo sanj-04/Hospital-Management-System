@@ -70,7 +70,7 @@
     <div class="accordion" id="patients">
       <ul class="list-group">
         {% for patient in patients %}
-        <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient"
+        <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient" id="patient_{{patient.id}}"
           data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
           {{patient.name}}
         </li>
@@ -297,6 +297,7 @@
           window.scrollTo(0, 0);
           document.getElementById("PrescriptionModalBody").innerHTML = "";
           $('#addPrescriptionModal').modal('hide');
+          document.getElementById("patient_"+patient_id).click();
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);

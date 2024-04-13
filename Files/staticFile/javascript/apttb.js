@@ -44,14 +44,16 @@ insertBtn.addEventListener('click', showInsertForm);
 let confirmDeleteButton;
 
 function showUpdateForm(button) {
-    let date_time = button.getAttribute('data-date_time');
+    let from_date_time = button.getAttribute('data-from_date_time');
+    let to_date_time = button.getAttribute('data-to_date_time');
     let patient_id = button.getAttribute('data-patient_id');
     let appointment_id = button.getAttribute('data-appointment_id');
     let row = button.parentNode.parentNode;
     let patient_name = row.cells[1].textContent;
 
     document.getElementById('id_patient_update').value = patient_name;
-    document.getElementById('id_data_time_update').value = date_time;
+    document.getElementById('id_from_date_time_update').value = from_date_time;
+    document.getElementById('id_to_date_time_update').value = to_date_time;
     document.getElementById('id_appointment_id_update').value = appointment_id;
     document.getElementById('id_patient_id_update').value = patient_id;
     updateForm.style.display = 'block';

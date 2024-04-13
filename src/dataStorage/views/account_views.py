@@ -10,7 +10,12 @@ from django.http import JsonResponse
 from django.http.request import QueryDict
 from datetime import datetime
 from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
-import json
+import json, hashlib
+
+def hash_dict_content(dictionary):
+    json_string = json.dumps(dictionary, sort_keys=True)
+    hash_object = hashlib.sha256(json_string.encode())
+    return hash_object.hexdigest()
 
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, **kwargs):
@@ -107,7 +112,7 @@ def adminpg(request):
         # ]
         prescriptions = [{
             "id": prescription.id,
-            "name": prescription.prescription_name,
+            "name": prescription.createTimestamp.strftime('%d-%b-%Y %I:%M %p'),
         } for prescription in prescriptionObjs]
 
         return JsonResponse({
@@ -121,9 +126,10 @@ def adminpg(request):
 
         doctorObj = Doctor.objects.get(user = request.user)
         patientObj = Patient.objects.get(id=int(patient_id))
+        prescription_json = json.loads(prescription)
         prescriptionObj = Prescription.objects.create(
-            prescription_name = f"Prescription of {patientObj.user.username} by {doctorObj.user.username}",
-            prescription_json =  json.loads(prescription),
+            prescription_hash = hash_dict_content(prescription_json),
+            prescription_json =  prescription_json,
             doctor = doctorObj,
             patient = patientObj,
         )
@@ -146,8 +152,10 @@ def apttb(request):
                 'appointment_id': appointment.id,
                 'patient_id': appointment.patient.id,
                 'patient_name': appointment.patient.user.username,
-                'appointment_date_time': appointment.date_time.strftime('%Y-%m-%dT%H:%M'),
-                'appointment_date_time_str': appointment.date_time.strftime('%d-%b-%Y %I:%M %p'),
+                'appointment_from_date_time': appointment.from_date_time.strftime('%Y-%m-%dT%H:%M'),
+                'appointment_to_date_time': appointment.to_date_time.strftime('%Y-%m-%dT%H:%M'),
+                'appointment_from_date_time_str': appointment.from_date_time.strftime('%d-%b-%Y %I:%M %p'),
+                'appointment_to_date_time_str': appointment.to_date_time.strftime('%d-%b-%Y %I:%M %p'),
                 'appointment_status': appointment.status,
             } for appointment in appointmentObjs],
             'patients' : [{
@@ -167,13 +175,16 @@ def apttb(request):
             patientObj = Patient.objects.get(
                 user__username = patient
             )
-        date_time = request.POST.get('date_time')
-        date_timeObj = datetime.strptime(date_time, "%Y-%m-%dT%H:%M")
+        from_date_time = request.POST.get('from_date_time')
+        to_date_time = request.POST.get('to_date_time')
+        from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
+        to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
         doctorObj = Doctor.objects.get(user = request.user)
         appointmentObj = Appointment.objects.create(
             doctor = doctorObj,
             patient = patientObj,
-            date_time = date_timeObj,
+            from_date_time = from_date_timeObj,
+            to_date_time = to_date_timeObj,
         )
         return JsonResponse(
             {
@@ -183,10 +194,13 @@ def apttb(request):
     
     elif request.method == "PUT" and request.is_ajax():
         appointment_id = QueryDict(request.body).get('appointment_id')
-        date_time = QueryDict(request.body).get('date_time')
-        date_timeObj = datetime.strptime(date_time, "%Y-%m-%dT%H:%M")
+        from_date_time = QueryDict(request.body).get('from_date_time')
+        to_date_time = QueryDict(request.body).get('to_date_time')
+        from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
+        to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
         appointmentObj = Appointment.objects.get(id = appointment_id)
-        appointmentObj.date_time = date_timeObj
+        appointmentObj.from_date_time = from_date_timeObj
+        appointmentObj.to_date_time = to_date_timeObj
         appointmentObj.save()
         return JsonResponse(
             {
