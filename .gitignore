@@ -1,3 +1,6 @@
+!src/dataStorage/migrations/__init__.py
+
 push.py
 src/db.sqlite3
 src/credentials/.env
+src/dataStorage/migrations/*
