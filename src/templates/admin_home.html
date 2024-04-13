@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<nav>
+  <ul class="pagination justify-content-center scrollable-div" id="legend">
+    <strong>Patient's Details</strong>
+  </ul>
+</nav>
+
+<div class="modal fade" id="addPrescriptionModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-xl ui-front" role="document">
+      <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
+          <div class="modal-body">
+              <div class="card border-dark mb-3">
+                  <div class="card-header">
+                    Add Prescription(s) for <span id="prescriptionPatientName"></span>
+                    <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="card-body text-dark" id="PrescriptionModalBody"></div>
+                  <div class="modal-footer justify-content-between">
+                      <button type="button" class="btn btn-primary float-left" id="addBtn">Add</button>
+                      <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick='$("#addPrescriptionModal").modal("hide")'>Close</button>
+                      <button type="button" class="btn btn-success float-right" id="updateBtn">Update</button>
+                  </div>
+                </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-2">
+    <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control form-control-sm my-2" placeholder="Filter Patient(s)">
+    <div class="accordion" id="patients">
+      <ul class="list-group">
+        {% for patient in patients %}
+        <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient"
+          data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" onclick="showPatientDetails(this);">
+          {{patient.name}}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-10">
+    <div id="patient_info" hidden>
+      <ul class="list-group">
+        <li class="list-group-item border border-dark">
+          <div class="row">
+              <div class="col-6">
+                <strong>Patient Name: </strong><span id="patient_info_name"></span>
+              </div>
+              <div class="col-5">
+                <strong>Patient ID: </strong><span id="patient_info_id"></span>
+              </div>
+              <div class="col-1">
+                <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPrescriptionModal').modal('show')">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <br/>
+    <div id="patient_prescription" hidden>
+      <div class="row" id="prescription_cards">
+        <div class="col-sm-4 mb-3 mb-sm-0">
+          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">Header</div>
+            <div class="card-body">
+              <h5 class="card-title">Primary card title</h5>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4 mb-3 mb-sm-0">
+          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">Header</div>
+            <div class="card-body">
+              <h5 class="card-title">Primary card title</h5>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4 mb-3 mb-sm-0">
+          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">Header</div>
+            <div class="card-body">
+              <h5 class="card-title">Primary card title</h5>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4 mb-3 mb-sm-0">
+          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">Header</div>
+            <div class="card-body">
+              <h5 class="card-title">Primary card title</h5>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/javascript">
+    function filter_patient() {
+      var filter, i;
+      filter = document.getElementById("id_filter_patient").value.toUpperCase();
+      let cells = document.querySelectorAll('.patient');
+      for (i = 0; i < cells.length; i++) {
+        let patient_name = cells[i].getAttribute('data-patient_name');
+        let patient_id = cells[i].getAttribute('data-patient_id');
+        if ((patient_name.toUpperCase().indexOf(filter) > -1) || (patient_id.toUpperCase().indexOf(filter) > -1)) {
+          cells[i].style.display = "";
+        } else {
+          cells[i].style.display = "none";
+        }
+      }
+    }
+
+    function showPatientDetails(ele) {
+      let patient_name = ele.getAttribute('data-patient_name');
+      let patient_id = ele.getAttribute('data-patient_id');
+      document.getElementById('patient_info').removeAttribute('hidden');
+      document.getElementById('patient_prescription').removeAttribute('hidden');
+      document.getElementById('patient_info_name').innerText = patient_name;
+      document.getElementById('prescriptionPatientName').innerText = patient_name;
+      document.getElementById('patient_info_id').innerText = patient_id;
+      fetchPatientDetails(patient_id);
+    }
+
+    function populatePrescriptions(prescriptions) {
+      let prescription_cardsEle = document.getElementById('prescription_cards');
+      let row = '';
+      prescription_cardsEle.innerHTML = row;
+      prescriptions.forEach(prescription => {
+        row = row + `<div class="col-sm-4 mb-3 mb-sm-0">
+          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">`+prescription.name+`</div>
+            <div class="card-body text-center">
+              <button class="btn btn-sm btn-success float-center" id="prescription_`+prescription.id+`">View</button>
+              <h5 class="card-title" hidden>Primary card title</h5>
+              <p class="card-text" hidden>Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>`;
+      });
+      prescription_cardsEle.innerHTML = row;
+    }
+
+    function fetchPatientDetails(patient_id) {
+      $.ajax({
+        url : "{% url 'dataStorage:adminpg' %}",
+        type : "POST",
+        data : {
+          'patient_id': patient_id,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse, textMsg, xhr) {
+          notify_message(HttpResponse.message, 'info');
+          window.scrollTo(0, 0);
+          populatePrescriptions(HttpResponse.prescriptions);
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert('Please fill in all fields.');
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+  </script>
+{% endblock content %}

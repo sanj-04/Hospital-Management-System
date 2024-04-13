@@ -23,14 +23,12 @@ def on_user_logged_in(sender, request, **kwargs):
 def on_user_login_failed(sender, request, **kwargs):
 	messages.warning(request, 'Logged in failed.')
 
-@login_required
-def home(request):
-    context = {}
-    return render(request, 'main.html', context)
-
-
 # @login_required
 def home(request):
+    if request.method == "GET" and request.is_ajax():
+        context = {}
+        return render(request, 'main.html', context)
+
     if request.method == "GET" and not request.is_ajax():
         patients = Patient.objects.all()
         context = {
@@ -44,8 +42,8 @@ def home(request):
             ]
         }
         return render(request, 'main.html', context)
+    
     elif request.method == "POST" and request.is_ajax():
-        print(request.POST)
         patient_id = request.POST.get('patient')
         try:
             patient = Patient.objects.get(id=int(patient_id))
@@ -75,21 +73,29 @@ def pres(request):
     return render(request, 'pres.html', context)
 
 def adminpg(request):
-    # 'patient':[
-    #     {
-    #         'name': 'royal',
-    #         'age': 40,
-    #         'disease': 'cough',
-    #     }
-    # ]
-    patientObjs = Patient.objects.all()
-    context = {
-        'patients' : [{
-            'name': patient.user.username,
-            'id': patient.id,
-        } for patient in patientObjs]
-    }
-    return render(request, 'adminpg.html', context)
+    if request.method == "GET" and not request.is_ajax():
+        patientObjs = Patient.objects.all()
+        context = {
+            'patients' : [{
+                'name': patient.user.username,
+                'id': patient.id,
+            } for patient in patientObjs]
+        }
+        return render(request, 'admin_home.html', context)
+        # return render(request, 'adminpg.html', context)
+
+    elif request.method == "POST" and request.is_ajax():
+        patient_id = request.POST.get('patient_id')
+        prescriptions = [
+            {
+                "id": index,
+                "name": f"Prescriptions {index}",
+            } for index in range(0, 5)
+        ]
+        return JsonResponse({
+            "message": f"Fetched patient {patient_id} by {request.user.username}",
+            "prescriptions": prescriptions,
+        }, status=200)
 
 @login_required
 def apttb(request):

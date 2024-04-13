@@ -40,8 +40,8 @@
     </style>
 		{% block javascript %}{% endblock javascript %}
 		<script type="text/javascript" src='{% static "javascript/jquery.js" %}'></script>
-    <script type="text/javascript" src='{% static "javascript/bootstrap.js" %}'></script>
-    <script type="text/javascript" src='{% static "javascript/bootstrap-notify.js" %}'></script>
+    	<script type="text/javascript" src='{% static "javascript/bootstrap.js" %}'></script>
+    	<script type="text/javascript" src='{% static "javascript/bootstrap-notify.js" %}'></script>
 		{% if messages %}
 		<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
 		  <symbol id="success" fill="currentColor" viewBox="0 0 16 16">
@@ -83,26 +83,78 @@
 	<body class="text-white bg-dark" id="bgTag" {% block bodyTag %}{% endblock bodyTag %}>
 		{% block javascriptEnd %}{% endblock javascriptEnd %}
 		{% include 'navbar.html' %}
-    <main role="main" class="container">
+		<main role="main" class="container">
 			{% block content %}{% endblock content %}
 		</main>
-		<script type="text/javascript">
-      const btn = document.querySelector('#darkMode')
-      const bg = document.querySelector('#bgTag')
-      btn.onclick = () => {
-          darkModeOn = bg.classList.contains("bg-dark")
-          if(darkModeOn === true){
-						btn.classList.remove("bi-lightbulb-off")
-						btn.classList.add("bi-lightbulb")
-            bg.classList.remove("bg-dark")
-            bg.classList.remove("text-white")
-          }else if(darkModeOn === false){
-						btn.classList.remove("bi-lightbulb")
-						btn.classList.add("bi-lightbulb-off")
-            bg.classList.add("bg-dark")
-            bg.classList.add("text-white")
-          }
-      }
+	<!-- <script type="text/javascript">
+		const btn = document.querySelector('#darkMode')
+		const bg = document.querySelector('#bgTag')
+		btn.onclick = () => {
+			darkModeOn = bg.classList.contains("bg-dark")
+			if(darkModeOn === true){
+				btn.classList.remove("bi-lightbulb-off")
+				btn.classList.add("bi-lightbulb")
+				bg.classList.remove("bg-dark")
+				bg.classList.remove("text-white")
+			}else if(darkModeOn === false){
+				btn.classList.remove("bi-lightbulb")
+				btn.classList.add("bi-lightbulb-off")
+				bg.classList.add("bg-dark")
+				bg.classList.add("text-white")
+			}
+		}
+    </script> -->
+	<script type="text/javascript">
+		$(function() {
+			let btn = document.querySelector('#darkMode');
+			let bg = document.querySelector('#bgTag');
+			let theme = localStorage.getItem("theme");
+			if (theme == 'dark') {
+				btn.classList.remove("bi-lightbulb");
+				btn.classList.add("bi-lightbulb-off");
+				bg.classList.add("bg-dark");
+				bg.classList.add("text-white");
+			} else {
+				btn.classList.remove("bi-lightbulb-off");
+				btn.classList.add("bi-lightbulb");
+				bg.classList.remove("bg-dark");
+				bg.classList.remove("text-white");
+			}
+
+			btn.addEventListener("click", function(event) {
+				let theme = localStorage.getItem("theme");
+				if(theme == 'dark'){
+					btn.classList.remove("bi-lightbulb-off");
+					btn.classList.add("bi-lightbulb");
+					bg.classList.remove("bg-dark");
+					bg.classList.remove("text-white");
+					localStorage.setItem("theme", 'light');
+				} else {
+					btn.classList.remove("bi-lightbulb");
+					btn.classList.add("bi-lightbulb-off");
+					bg.classList.add("bg-dark");
+					bg.classList.add("text-white");
+					localStorage.setItem("theme", 'dark');
+				}
+			});
+		});
+
+		function notify_message(message, tags) {
+			$.notify(message,
+				{
+					type: tags,
+					showProgressbar: true,
+					placement: {
+					from: "top",
+					align: "center"
+				},
+				delay: 5000,
+				animate: {
+					enter: "animate__animated animate__flipInX",
+					exit: "animate__animated animate__fadeOutUp"
+				},
+			});
+		}
     </script>
 	</body>
 </html>
