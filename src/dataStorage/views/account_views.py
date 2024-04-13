@@ -81,8 +81,11 @@ def adminpg(request):
                 'id': patient.id,
             } for patient in patientObjs]
         }
-        return render(request, 'admin_home.html', context)
-        # return render(request, 'adminpg.html', context)
+        ver = request.GET.get('ver', '0')
+        if ver == '0':
+            return render(request, 'admin_home.html', context)
+        else:
+            return render(request, 'adminpg.html', context)
 
     elif request.method == "POST" and request.is_ajax():
         patient_id = request.POST.get('patient_id')
