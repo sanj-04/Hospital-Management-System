@@ -138,6 +138,10 @@
       document.getElementById('patient_info_name').innerText = patient_name;
       document.getElementById('prescriptionPatientName').innerText = patient_name;
       document.getElementById('patient_info_id').innerText = patient_id;
+      document.querySelectorAll('.patient').forEach(x => {
+        x.classList.remove("active");
+      });
+      ele.classList.add("active");
       fetchPatientDetails(patient_id);
     }
 
