@@ -1,5 +1,14 @@
 {% extends 'base.html' %}
 
+{% block styles %}
+#patient_list_div, #patient_info_div {
+  height: calc(100vh - 25vh);
+  background-color: lightgrey;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+{% endblock styles %}
+
 {% block content %}
 <nav>
   <ul class="pagination justify-content-center scrollable-div" id="legend">
@@ -29,7 +38,7 @@
 </div>
 
 <div class="row">
-  <div class="col-2">
+  <div class="col-2 border border-success p-2 mb-2 border-5" id="patient_list_div">
     <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control form-control-sm my-2" placeholder="Filter Patient(s)">
     <div class="accordion" id="patients">
       <ul class="list-group">
@@ -42,7 +51,7 @@
       </ul>
     </div>
   </div>
-  <div class="col-10">
+  <div class="col-10 border border-primary p-2 mb-2 border-5" id="patient_info_div">
     <div id="patient_info" hidden>
       <ul class="list-group">
         <li class="list-group-item border border-dark">

@@ -9,27 +9,26 @@
 		<link rel="stylesheet" href='{% static "css/all.css" %}' type="text/css"/>
 		<link rel="stylesheet" href='{% static "css/animate.css" %}' type="text/css"/>
 		<link rel="shortcut icon" href="{% static 'images/favicon.ico' type='image/x-icon' %}">
-		<style>
-      .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
+		<style type="text/css">
+			.bd-placeholder-img {
+				font-size: 1.125rem;
+				text-anchor: middle;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
 
-      @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-          font-size: 3.5rem;
-        }
-      }
+			@media (min-width: 768px) {
+				.bd-placeholder-img-lg {
+					font-size: 3.5rem;
+				}
+			}
 			::-webkit-scrollbar {
 				width: 1px;
 			}
 
-			[data-notify="progressbar"]
-			{
+			[data-notify="progressbar"] {
 				margin-bottom: 0px;
 				position: absolute;
 				bottom: 0px;
@@ -37,6 +36,7 @@
 				width: 100%;
 				height: 5px;
 			}
+			{% block styles %}{% endblock styles %}
     </style>
 		{% block javascript %}{% endblock javascript %}
 		<script type="text/javascript" src='{% static "javascript/jquery.js" %}'></script>
