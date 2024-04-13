@@ -9,7 +9,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.http.request import QueryDict
 from datetime import datetime
-from dataStorage.models import Patient, Appointment, Doctor
+from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
+import json
 
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, **kwargs):
@@ -38,6 +39,7 @@ def home(request):
                     'name': patient.user.username,
                     'phone_number': patient.phone_number,
                     'date_of_birth': patient.date_of_birth,
+                    'age': patient.age,
                 } for patient in patients
             ]
         }
@@ -75,11 +77,18 @@ def pres(request):
 def adminpg(request):
     if request.method == "GET" and not request.is_ajax():
         patientObjs = Patient.objects.all()
+        medicineObjs = Medicine.objects.all()
+        
         context = {
-            'patients' : [{
-                'name': patient.user.username,
-                'id': patient.id,
-            } for patient in patientObjs]
+            "patients" : [{
+                "id": patient.id,
+                "name": patient.user.username,
+                "age": patient.age,
+            } for patient in patientObjs],
+            "medicines" : [{
+                "id": medicine.id,
+                "name": medicine.medicine_name,
+            } for medicine in medicineObjs]
         }
         ver = request.GET.get('ver', '0')
         if ver == '0':
@@ -89,16 +98,42 @@ def adminpg(request):
 
     elif request.method == "POST" and request.is_ajax():
         patient_id = request.POST.get('patient_id')
-        prescriptions = [
-            {
-                "id": index,
-                "name": f"Prescriptions {index}",
-            } for index in range(0, 5)
-        ]
+        prescriptionObjs = Prescription.objects.filter(patient_id = patient_id)
+        # prescriptions = [
+        #     {
+        #         "id": index,
+        #         "name": f"Prescriptions {index}",
+        #     } for index in range(0, 5)
+        # ]
+        prescriptions = [{
+            "id": prescription.id,
+            "name": prescription.prescription_name,
+        } for prescription in prescriptionObjs]
+
         return JsonResponse({
             "message": f"Fetched patient {patient_id} by {request.user.username}",
             "prescriptions": prescriptions,
         }, status=200)
+    
+    elif request.method == "PUT" and request.is_ajax():
+        patient_id = QueryDict(request.body).get('patient_id')
+        prescription = QueryDict(request.body).get('prescription')
+
+        doctorObj = Doctor.objects.get(user = request.user)
+        patientObj = Patient.objects.get(id=int(patient_id))
+        prescriptionObj = Prescription.objects.create(
+            prescription_name = f"Prescription of {patientObj.user.username} by {doctorObj.user.username}",
+            prescription_json =  json.loads(prescription),
+            doctor = doctorObj,
+            patient = patientObj,
+        )
+        return JsonResponse(
+            {
+                'message': f'Added Prescription of {patient_id} by {request.user.username}',
+                'prescription_id': prescriptionObj.id,
+            },status=200
+        )
+
 
 @login_required
 def apttb(request):

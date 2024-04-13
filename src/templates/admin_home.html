@@ -7,6 +7,27 @@
   overflow-y:auto;
   overflow-x:hidden;
 }
+
+#PrescriptionModalBody {
+  height: calc(100vh - 30vh);
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.small-close-btn {
+  height: 0.25em;
+  width: 0.25em;
+  padding: 0.25em 0.25em;
+  padding-y: 0.25rem;
+  padding-x: 0.25rem;
+  font-size: 1rem;
+  border-radius: var(--bs-border-radius-sm);
+}
+
+.num {
+  width: 40px;
+  display: inline-block;
+}
 {% endblock styles %}
 
 {% block content %}
@@ -28,8 +49,8 @@
                   <div class="card-body text-dark" id="PrescriptionModalBody"></div>
                   <div class="modal-footer justify-content-between">
                       <button type="button" class="btn btn-primary float-left" id="addBtn">Add</button>
-                      <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick='$("#addPrescriptionModal").modal("hide")'>Close</button>
-                      <button type="button" class="btn btn-success float-right" id="updateBtn">Update</button>
+                      <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="$('#addPrescriptionModal').modal('hide');">Close</button>
+                      <button type="button" class="btn btn-success float-right" onclick="processPrescription();">Create Prescription</button>
                   </div>
                 </div>
           </div>
@@ -37,14 +58,20 @@
   </div>
 </div>
 
+<datalist id="id_medicine_list">
+  {% for medicine in medicines %}
+  <option value="{{medicine.name}}">{{medicine.name}}</option>
+  {% endfor %}
+</datalist>
+
 <div class="row">
   <div class="col-2 border border-success p-2 mb-2 border-5" id="patient_list_div">
-    <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control form-control-sm my-2" placeholder="Filter Patient(s)">
+    <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control my-2" placeholder="Filter Patient(s)">
     <div class="accordion" id="patients">
       <ul class="list-group">
         {% for patient in patients %}
         <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient"
-          data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" onclick="showPatientDetails(this);">
+          data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
           {{patient.name}}
         </li>
         {% endfor %}
@@ -56,11 +83,14 @@
       <ul class="list-group">
         <li class="list-group-item border border-dark">
           <div class="row">
-              <div class="col-6">
+              <div class="col-5">
                 <strong>Patient Name: </strong><span id="patient_info_name"></span>
               </div>
-              <div class="col-5">
+              <div class="col-2">
                 <strong>Patient ID: </strong><span id="patient_info_id"></span>
+              </div>
+              <div class="col-4">
+                <strong>Patient Age: </strong><span id="patient_info_age"></span>
               </div>
               <div class="col-1">
                 <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPrescriptionModal').modal('show')">
@@ -115,6 +145,29 @@
   </div>
 
   <script type="application/javascript">
+    $(function(){
+      document.getElementById('addBtn').addEventListener('click', event => {
+        form = `<div class="input-group input-group-sm mb-3">
+          <input type="text" name="medicine_name" class="form-control form-control-sm my-2" placeholder="Medicine Name" style="width: 130px;" list="id_medicine_list" autocomplete="off">
+          <input type="number" name="before_breakfast" class="form-control form-control-sm my-2" placeholder="Before Breakfast" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="after_breakfast" class="form-control form-control-sm my-2" placeholder="After Breakfast" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="before_lunch" class="form-control form-control-sm my-2" placeholder="Before Lunch" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="after_lunch" class="form-control form-control-sm my-2" placeholder="After Lunch" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="before_dinner" class="form-control form-control-sm my-2" placeholder="Before Dinner" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="after_dinner" class="form-control form-control-sm my-2" placeholder="After Dinner" min="0" oninput="validity.valid||(value='');">
+          <span class="input-group-text">
+            <button type="button" class="btn-close small-close-btn my-2" name="remove_medicine"></button>
+          </span>
+          <p class="invalid-feedback"><strong>This field required valid value</strong></p>
+        </div>`
+        document.getElementById('PrescriptionModalBody').insertAdjacentHTML('beforeend', form);
+        identityRemoveBtn = document.querySelectorAll('button[name="remove_medicine"]');
+        identityRemoveBtn.forEach(el => el.addEventListener('click', event => {
+          event.target.parentNode.parentNode.remove();
+        }));
+      });
+    });
+
     function filter_patient() {
       var filter, i;
       filter = document.getElementById("id_filter_patient").value.toUpperCase();
@@ -133,11 +186,13 @@
     function showPatientDetails(ele) {
       let patient_name = ele.getAttribute('data-patient_name');
       let patient_id = ele.getAttribute('data-patient_id');
+      let patient_age = ele.getAttribute('data-patient_age');
       document.getElementById('patient_info').removeAttribute('hidden');
       document.getElementById('patient_prescription').removeAttribute('hidden');
       document.getElementById('patient_info_name').innerText = patient_name;
       document.getElementById('prescriptionPatientName').innerText = patient_name;
       document.getElementById('patient_info_id').innerText = patient_id;
+      document.getElementById('patient_info_age').innerText = patient_age;
       document.querySelectorAll('.patient').forEach(x => {
         x.classList.remove("active");
       });
@@ -164,6 +219,36 @@
       prescription_cardsEle.innerHTML = row;
     }
 
+    function createPrescription() {
+      let medicine_name = document.querySelectorAll('[name="medicine_name"]');
+      let before_breakfast = document.querySelectorAll('[name="before_breakfast"]');
+      let after_breakfast = document.querySelectorAll('[name="after_breakfast"]');
+      let before_lunch = document.querySelectorAll('[name="before_lunch"]');
+      let after_lunch = document.querySelectorAll('[name="after_lunch"]');
+      let before_dinner = document.querySelectorAll('[name="before_dinner"]');
+      let after_dinner = document.querySelectorAll('[name="after_dinner"]');
+
+      let prescription_list = [];
+      for (let index = 0; index < medicine_name.length; index++) {
+        if (medicine_name[index].value != '') {
+          var obj = new Object();
+          obj.medicine_name = medicine_name[index].value;
+          obj.before_breakfast = Number(before_breakfast[index].value);
+          obj.after_breakfast = Number(after_breakfast[index].value);
+          obj.before_lunch = Number(before_lunch[index].value);
+          obj.after_lunch = Number(after_lunch[index].value);
+          obj.before_dinner = Number(before_dinner[index].value);
+          obj.after_dinner = Number(after_dinner[index].value);
+          prescription_list.push(obj);
+        }
+      }
+      if (prescription_list != []) {
+        return JSON.stringify(prescription_list);
+      } else {
+        alert('Please fill in all fields.');
+      }
+    }
+
     function fetchPatientDetails(patient_id) {
       $.ajax({
         url : "{% url 'dataStorage:adminpg' %}",
@@ -179,6 +264,39 @@
           notify_message(HttpResponse.message, 'info');
           window.scrollTo(0, 0);
           populatePrescriptions(HttpResponse.prescriptions);
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert('Please fill in all fields.');
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function processPrescription() {
+      let patient_id = document.getElementById('patient_info_id').innerText;
+      $.ajax({
+        url : "{% url 'dataStorage:adminpg' %}",
+        type : "PUT",
+        data : {
+          'patient_id': patient_id,
+          'prescription': createPrescription(),
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse, textMsg, xhr) {
+          notify_message(HttpResponse.message, 'info');
+          window.scrollTo(0, 0);
+          document.getElementById("PrescriptionModalBody").innerHTML = "";
+          $('#addPrescriptionModal').modal('hide');
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
