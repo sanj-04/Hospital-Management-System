@@ -23,4 +23,6 @@ urlpatterns = [
 	path('api/home/', views.HomeView.as_view(), name='api_home'),
 	path('api/logout/', knox_views.LogoutView.as_view(), name='api_logout'),
 	path('api/logoutall/', knox_views.LogoutAllView.as_view(), name='logoutall'),
+    
+	path('generate_token', views.generate_token, name='generate_token'),
 ]

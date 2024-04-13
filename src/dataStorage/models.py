@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator
 import ulid, os
 from datetime import date
 from django.template.defaultfilters import slugify
+from django_otp.util import hex_validator, random_hex
 
 phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
 
@@ -14,6 +15,12 @@ def increment_ulid(name):
 
 def slugify_data(name):
     return slugify(name)
+
+def default_key():
+    return random_hex(20)
+
+def key_validator(value):
+    return hex_validator()(value)
 
 status_choices = (
     ("Pending", "Pending"),
@@ -29,6 +36,12 @@ class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, unique=True)
     date_of_birth = models.DateField(blank=True, null=True)
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    token_key = models.CharField(
+        max_length=80,
+        validators=[key_validator],
+        default=default_key,
+        help_text="A hex-encoded secret key of up to 40 bytes.",
+    )
 
     @property
     def age(self):
@@ -110,3 +123,16 @@ class Prescription(models.Model):
 
     def __str__(self):
         return str(self.prescription_name)
+    
+class Token(models.Model):
+    patient = models.ForeignKey(Patient, related_name='patientTokenLink', on_delete=models.DO_NOTHING)
+    token_number = models.CharField(max_length=8)
+    is_active = models.BooleanField(default=True)
+    createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+
+    class Meta:
+        db_table = 'tokens'
+        managed = True
+
+    def __str__(self):
+        return str(f"{self.patient.user.username}:{self.token_number}")
