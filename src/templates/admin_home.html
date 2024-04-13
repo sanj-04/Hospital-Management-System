@@ -31,9 +31,9 @@
 {% endblock styles %}
 
 {% block content %}
-<nav>
+<nav hidden>
   <ul class="pagination justify-content-center scrollable-div" id="legend">
-    <strong>Patient's Details</strong>
+    <strong></strong>
   </ul>
 </nav>
 
@@ -64,85 +64,99 @@
   {% endfor %}
 </datalist>
 
-<div class="row">
-  <div class="col-2 border border-success p-2 mb-2 border-5" id="patient_list_div">
-    <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control my-2" placeholder="Filter Patient(s)">
-    <div class="accordion" id="patients">
-      <ul class="list-group">
-        {% for patient in patients %}
-        <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient" id="patient_{{patient.id}}"
-          data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
-          {{patient.name}}
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-  <div class="col-10 border border-primary p-2 mb-2 border-5" id="patient_info_div">
-    <div id="patient_info" hidden>
-      <ul class="list-group">
-        <li class="list-group-item border border-dark">
-          <div class="row">
-              <div class="col-5">
-                <strong>Patient Name: </strong><span id="patient_info_name"></span>
-              </div>
-              <div class="col-2">
-                <strong>Patient ID: </strong><span id="patient_info_id"></span>
-              </div>
-              <div class="col-4">
-                <strong>Patient Age: </strong><span id="patient_info_age"></span>
-              </div>
-              <div class="col-1">
-                <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPrescriptionModal').modal('show')">
-                  <i class="fas fa-plus"></i>
-                </button>
-              </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <br/>
-    <div id="patient_prescription" hidden>
-      <div class="row" id="prescription_cards">
-        <div class="col-sm-4 mb-3 mb-sm-0">
-          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
-            <div class="card-header">Header</div>
-            <div class="card-body">
-              <h5 class="card-title">Primary card title</h5>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            </div>
-          </div>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="patient_list" data-bs-toggle="tab" data-bs-target="#patient_tab">Patient(s)</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="appointment_list" data-bs-toggle="tab" data-bs-target="#appointment_tab">Appointment(s)</button>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="patient_tab" role="tabpanel" aria-labelledby="patient_tab">
+    <div class="row">
+      <div class="col-2 border border-success p-2 mb-2 border-5" id="patient_list_div">
+        <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control my-2" placeholder="Filter Patient(s)">
+        <div class="accordion" id="patients">
+          <ul class="list-group">
+            {% for patient in patients %}
+            <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient" id="patient_{{patient.id}}"
+              data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
+              {{patient.name}}
+            </li>
+            {% endfor %}
+          </ul>
         </div>
-        <div class="col-sm-4 mb-3 mb-sm-0">
-          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
-            <div class="card-header">Header</div>
-            <div class="card-body">
-              <h5 class="card-title">Primary card title</h5>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            </div>
-          </div>
+      </div>
+      <div class="col-10 border border-primary p-2 mb-2 border-5" id="patient_info_div">
+        <div id="patient_info" hidden>
+          <ul class="list-group">
+            <li class="list-group-item border border-dark">
+              <div class="row">
+                  <div class="col-5">
+                    <strong>Patient Name: </strong><span id="patient_info_name"></span>
+                  </div>
+                  <div class="col-2">
+                    <strong>Patient ID: </strong><span id="patient_info_id"></span>
+                  </div>
+                  <div class="col-4">
+                    <strong>Patient Age: </strong><span id="patient_info_age"></span>
+                  </div>
+                  <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPrescriptionModal').modal('show')">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div class="col-sm-4 mb-3 mb-sm-0">
-          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
-            <div class="card-header">Header</div>
-            <div class="card-body">
-              <h5 class="card-title">Primary card title</h5>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+        <br/>
+        <div id="patient_prescription" hidden>
+          <div class="row" id="prescription_cards">
+            <div class="col-sm-4 mb-3 mb-sm-0">
+              <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header">Header</div>
+                <div class="card-body">
+                  <h5 class="card-title">Primary card title</h5>
+                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="col-sm-4 mb-3 mb-sm-0">
-          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
-            <div class="card-header">Header</div>
-            <div class="card-body">
-              <h5 class="card-title">Primary card title</h5>
-              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <div class="col-sm-4 mb-3 mb-sm-0">
+              <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header">Header</div>
+                <div class="card-body">
+                  <h5 class="card-title">Primary card title</h5>
+                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4 mb-3 mb-sm-0">
+              <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header">Header</div>
+                <div class="card-body">
+                  <h5 class="card-title">Primary card title</h5>
+                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4 mb-3 mb-sm-0">
+              <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+                <div class="card-header">Header</div>
+                <div class="card-body">
+                  <h5 class="card-title">Primary card title</h5>
+                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="tab-pane fade" id="appointment_tab" role="tabpanel" aria-labelledby="appointment_tab">...</div>
+</div>
 
   <script type="application/javascript">
     $(function(){
