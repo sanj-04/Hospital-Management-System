@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.http.request import QueryDict
 from datetime import datetime
 from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
+from dataStorage.models import status_choices
 import json, hashlib
 
 def hash_dict_content(dictionary):
@@ -83,6 +84,7 @@ def adminpg(request):
     if request.method == "GET" and not request.is_ajax():
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
+        appointmentObjs = Appointment.objects.all().order_by('from_date_time')
         
         context = {
             "patients" : [{
@@ -93,7 +95,18 @@ def adminpg(request):
             "medicines" : [{
                 "id": medicine.id,
                 "name": medicine.medicine_name,
-            } for medicine in medicineObjs]
+            } for medicine in medicineObjs],
+            "appointments" : [{
+                "appointment_id": appointment.id,
+                "patient_id": appointment.patient.id,
+                "patient_name": appointment.patient.user.username,
+                "appointment_from_date_time": appointment.from_date_time.strftime('%Y-%m-%dT%H:%M'),
+                "appointment_to_date_time": appointment.to_date_time.strftime('%Y-%m-%dT%H:%M'),
+                "appointment_from_date_time_str": appointment.from_date_time.strftime('%d-%b-%Y %I:%M %p'),
+                "appointment_to_date_time_str": appointment.to_date_time.strftime('%d-%b-%Y %I:%M %p'),
+                "appointment_status": appointment.status,
+            } for appointment in appointmentObjs],
+            "status_choices": status_choices,
         }
         ver = request.GET.get('ver', '0')
         if ver == '0':
@@ -177,6 +190,7 @@ def apttb(request):
             )
         from_date_time = request.POST.get('from_date_time')
         to_date_time = request.POST.get('to_date_time')
+        appointment_status = request.POST.get('appointment_status')
         from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
         to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
         doctorObj = Doctor.objects.get(user = request.user)
@@ -185,6 +199,7 @@ def apttb(request):
             patient = patientObj,
             from_date_time = from_date_timeObj,
             to_date_time = to_date_timeObj,
+            status = appointment_status,
         )
         return JsonResponse(
             {
@@ -196,11 +211,15 @@ def apttb(request):
         appointment_id = QueryDict(request.body).get('appointment_id')
         from_date_time = QueryDict(request.body).get('from_date_time')
         to_date_time = QueryDict(request.body).get('to_date_time')
+        appointment_status = QueryDict(request.body).get('appointment_status')
         from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
         to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
+
         appointmentObj = Appointment.objects.get(id = appointment_id)
         appointmentObj.from_date_time = from_date_timeObj
         appointmentObj.to_date_time = to_date_timeObj
+        if appointment_status:
+            appointmentObj.status = appointment_status
         appointmentObj.save()
         return JsonResponse(
             {
