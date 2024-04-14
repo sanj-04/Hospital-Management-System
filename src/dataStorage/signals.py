@@ -21,7 +21,7 @@ from dataStorage.models import Patient, Doctor
 # # qrcode==7.3.1
 # # django-otp==1.1.3
 
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def postRegistrations(sender, instance, created, **kwargs):
-	if created:
-		Patient.objects.create(user = instance)
+# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+# def postRegistrations(sender, instance, created, **kwargs):
+# 	if created:
+# 		Patient.objects.create(user = instance)

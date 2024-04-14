@@ -4,6 +4,7 @@ from django.urls import reverse, get_resolver
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.signals import user_logged_out, user_logged_in, user_login_failed
+from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models import Q
 from django.http import JsonResponse
@@ -11,6 +12,7 @@ from django.http.request import QueryDict
 from datetime import datetime
 from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
 from dataStorage.models import status_choices
+from dataStorage.forms import PatientForm
 import json, hashlib
 
 def hash_dict_content(dictionary):
@@ -90,7 +92,7 @@ def adminpg(request):
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
         appointmentObjs = Appointment.objects.all().order_by('from_date_time')
-        
+        patientFormObj = PatientForm()
         context = {
             "patients" : [{
                 "id": patient.id,
@@ -112,6 +114,7 @@ def adminpg(request):
                 "appointment_status": appointment.status,
             } for appointment in appointmentObjs],
             "status_choices": status_choices,
+            "patientForm": patientFormObj,
         }
         ver = request.GET.get('ver', '0')
         if ver == '0':
@@ -119,15 +122,9 @@ def adminpg(request):
         else:
             return render(request, 'adminpg.html', context)
 
-    elif request.method == "POST" and request.is_ajax():
-        patient_id = request.POST.get('patient_id')
+    elif request.method == "GET" and request.is_ajax():
+        patient_id = request.GET.get('patient_id')
         prescriptionObjs = Prescription.objects.filter(patient_id = patient_id)
-        # prescriptions = [
-        #     {
-        #         "id": index,
-        #         "name": f"Prescriptions {index}",
-        #     } for index in range(0, 5)
-        # ]
         prescriptions = [{
             "id": prescription.id,
             "name": prescription.createTimestamp.strftime('%d-%b-%Y %I:%M %p'),
@@ -137,6 +134,37 @@ def adminpg(request):
             "message": f"Fetched patient {patient_id} by {request.user.username}",
             "prescriptions": prescriptions,
         }, status=200)
+    
+    elif request.method == "POST" and request.is_ajax():
+        patient_name = request.POST.get('patient_name')
+        date_of_birth = request.POST.get('date_of_birth')
+        date_of_birthObj = datetime.strptime(date_of_birth, "%Y-%m-%d")
+        phone_number = request.POST.get('phone_number')
+        try:
+            userObj = User.objects.get(username = patient_name)
+        except User.DoesNotExist as e:
+            userObj = User.objects.create_user(
+                username = patient_name,
+                email = None,
+                password = phone_number,
+            )
+            userObj.save()
+        try:
+            patientObj = Patient.objects.get(user_id = userObj.id)
+        except Patient.DoesNotExist:
+            patientObj = Patient.objects.create(
+                user_id = userObj.id,
+                date_of_birth = date_of_birthObj.date(),
+                phone_number = phone_number,
+            )
+
+            return JsonResponse({
+                "message": f"Created patient {patient_name} by {request.user.username}",
+            }, status=200)
+
+        return JsonResponse({
+            "message": f"Failed to Create patient {patient_name} by {request.user.username}",
+        }, status=404)
     
     elif request.method == "PUT" and request.is_ajax():
         patient_id = QueryDict(request.body).get('patient_id')

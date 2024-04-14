@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 {% block styles %}
 #patient_list_div, #patient_info_div {
@@ -125,6 +126,32 @@
   </div>
 </div>
 
+<div class="modal fade" id="addPatient" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg ui-front" role="document">
+    <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
+      <div class="modal-body">
+        <div class="card border-dark mb-3">
+          <div class="card-header">
+            Add Patient Detail
+            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="card-body text-dark" id="addPatientModalBody">
+            <div class='col-md-12'>{{ patientForm.patient | as_crispy_field }}</div>
+            <div class="row">
+              <div class='col-md-6'>{{ patientForm.date_of_birth | as_crispy_field }}</div>
+              <div class='col-md-6'>{{ patientForm.phone_number | as_crispy_field }}</div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="$('#addPatient').modal('hide');">Close</button>
+            <button type="button" class="btn btn-success float-right" onclick="addPatientDetail();">Add Patient</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <ul class="nav nav-tabs" id="myTab" role="tablist">
   <li class="nav-item" role="presentation">
     <button class="nav-link active" id="patient_list" data-bs-toggle="tab" data-bs-target="#patient_tab">Patient(s)</button>
@@ -146,6 +173,12 @@
               {{patient.name}}
             </li>
             {% endfor %}
+            <li style="cursor: pointer;" id="add_patient" onclick="$('#addPatient').modal('show');"
+              class="card-body list-group-item list-group-item-action border border-dark patient text-center">
+              <button type="button" class="btn btn-sm btn-success col-block">
+                Add Patient
+              </button>
+            </li>
           </ul>
         </div>
       </div>
@@ -358,10 +391,45 @@
       }
     }
 
-    function fetchPatientDetails(patient_id) {
+    function addPatientDetail() {
+      let patient_name = document.getElementById('id_patient').value;
+      let date_of_birth = document.getElementById('id_date_of_birth').value;
+      let phone_number = document.getElementById('id_phone_number').value;
       $.ajax({
         url : "{% url 'dataStorage:adminpg' %}",
         type : "POST",
+        data : {
+          'patient_name': patient_name,
+          'date_of_birth': date_of_birth,
+          'phone_number': phone_number,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse, textMsg, xhr) {
+          notify_message(HttpResponse.message, 'success');
+          window.scrollTo(0, 0);
+          location.reload();
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert('Please fill in all fields.');
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function fetchPatientDetails(patient_id) {
+      $.ajax({
+        url : "{% url 'dataStorage:adminpg' %}",
+        type : "GET",
         data : {
           'patient_id': patient_id,
           'csrfmiddlewaretoken': '{{ csrf_token }}'
