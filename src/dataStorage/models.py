@@ -154,5 +154,9 @@ class Schedule(models.Model):
         db_table = 'schedules'
         managed = True
 
+    @property
+    def rejected_days_count(self):
+        return f"{len(self.schedule_json.get('rejected_days'))} day(s)"
+
     def __str__(self):
         return str(self.schedule_month_year.strftime('%B-%Y'))
