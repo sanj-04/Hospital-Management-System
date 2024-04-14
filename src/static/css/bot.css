@@ -1,0 +1,24 @@
+#chat-container.hidden {
+    display: none;
+  }
+  
+  .card {
+    width: 400px;
+    height: 500px;
+  }
+  
+  .chat-log {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .card-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+  }
+  #back-button-container.d-none {
+    display: none;
+  }

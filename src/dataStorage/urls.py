@@ -25,5 +25,6 @@ urlpatterns = [
 	path('api/logoutall/', knox_views.LogoutAllView.as_view(), name='logoutall'),
     
 	path('generate_token', views.generate_token, name='generate_token'),
+	path('bot_chat', views.bot_chat, name='bot_chat'),
 	path('bot', views.bot, name='bot'),
 ]

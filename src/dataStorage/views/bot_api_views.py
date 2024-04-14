@@ -68,3 +68,11 @@ def generate_token(request):
 		return JsonResponse({
 			"message": f"Deleted patient Token of {patient_id}",
 		}, status=200)
+	
+# @csrf_exempt
+def bot_chat(request):
+	if request.method == "POST" and request.is_ajax():
+		return JsonResponse({
+			"message": f"{request.POST.get('content')}",
+			"response": "hello",
+		}, status=200)
