@@ -29,6 +29,12 @@ status_choices = (
     ("Completed", "Completed"),
 )
 
+schedule_status_choices = (
+    ("Inactive", "Inactive"),
+    ("Active", "Active"),
+    ("Deleted", "Deleted"),
+)
+
 # Create your models here.
 class Patient(models.Model):
     # patient_id = models.CharField(max_length=40, unique=True, default=increment_ulid("patient"), editable=True, primary_key=True)
@@ -136,3 +142,17 @@ class Token(models.Model):
 
     def __str__(self):
         return str(f"{self.patient.user.username}:{self.token_number}")
+    
+class Schedule(models.Model):
+    schedule_month_year = models.DateField(blank=True, null=True)
+    schedule_json = models.JSONField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updateTimestamp = models.DateTimeField(auto_now=True, blank=True, null=True)
+
+    class Meta:
+        db_table = 'schedules'
+        managed = True
+
+    def __str__(self):
+        return str(self.schedule_month.strftime('%B-%Y'))

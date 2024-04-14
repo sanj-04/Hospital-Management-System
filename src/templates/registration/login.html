@@ -5,13 +5,21 @@
 {% block title %}{% trans "Log in" %}{% endblock %}
 
 {% block content %}
-<form method="post" action="" class="row g-3 needs-validation" novalidate>
-    {% csrf_token %}
-    {{ form|crispy }}
-    <input type="submit" class="btn btn-sm btn-outline-primary" value="{% trans 'Log in' %}" />
-    <input type="hidden" name="next" value="{{ next }}" />
-</form>
-
+<div class="content-section" style="padding-left:20px">
+    <form method="post" action="" class="row g-3 needs-validation" novalidate>
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Login</legend>
+            <div class='col-md-4'>{{ form.username | as_crispy_field }}</div>
+            <div class='col-md-4'>{{ form.password | as_crispy_field }}</div>
+        </fieldset>
+        <div class="row form-group">
+            <input type="submit" class="btn btn-sm btn-outline-primary col-md-3 text-center" value="{% trans 'Log in' %}" />
+            <input type="hidden" name="next" value="{{ next }}" />
+        </div>
+    </form>
+</div>
+<br><br>
 <p class="float-start">{% trans "Forgot your password?" %} <a href="{% url 'auth_password_reset' %}">{% trans "Reset it" %}</a>.</p>
 <p class="float-end">{% trans "Not a member?" %} <a href="{% url 'registration_register' %}">{% trans "Register" %}</a>.</p>
 {% endblock %}

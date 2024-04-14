@@ -5,11 +5,21 @@
 {% block title %}{% trans "Register for an account" %}{% endblock %}
 
 {% block content %}
-<form method="post" action="" class="row g-3 needs-validation" novalidate>
-    {% csrf_token %}
-    {{ form|crispy }}
-    <input type="submit" class="btn btn-sm btn-outline-primary" value="{% trans 'Submit' %}" />
-</form>
+<div class="content-section" style="padding-left:20px">
+    <form method="post" action="" class="row g-3 needs-validation" novalidate>
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Registration</legend>
+            <div class='col-md-6'>{{ form.username | as_crispy_field }}</div>
+            <div class='col-md-6'>{{ form.email | as_crispy_field }}</div>
+            <div class='col-md-6'>{{ form.password1 | as_crispy_field }}</div>
+            <div class='col-md-6'>{{ form.password2 | as_crispy_field }}</div>
+        </fieldset>
+        <div class="row form-group">
+            <input type="submit" class="btn btn-sm btn-outline-primary col-md-6 text-left" value="{% trans 'Submit' %}" />
+        </div>
+    </form>
+</div>
 {% endblock %}
 
 
