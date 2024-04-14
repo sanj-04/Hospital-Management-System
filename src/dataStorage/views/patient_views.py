@@ -29,7 +29,7 @@ def patient_operation(request):
     elif request.method == "POST" and request.is_ajax():
         patient_name = request.POST.get('patient_name')
         date_of_birth = request.POST.get('date_of_birth')
-        date_of_birthObj = datetime.strptime(date_of_birth, "%Y-%m-%d")
+        date_of_birthObj = datetime.strptime(date_of_birth, "%d-%b-%Y")# "%Y-%m-%d"
         phone_number = request.POST.get('phone_number')
         try:
             userObj = User.objects.get(username = patient_name)

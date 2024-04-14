@@ -12,7 +12,7 @@ def hash_dict_content(dictionary):
     return hash_object.hexdigest()
 
 @login_required
-def patient_operation(request):
+def schedule_operation(request):
     if request.method == "GET" and request.is_ajax():
         patient_id = request.GET.get('patient_id')
         prescriptionObjs = Prescription.objects.filter(patient_id = patient_id)

@@ -2,7 +2,8 @@ from django import forms
 from dataStorage.models import Patient
 
 class DateInput(forms.DateInput):
-    input_type = 'date'
+    input_type = 'text'
+    # input_type = 'date'
 
 class PatientForm(forms.ModelForm):
     patient = forms.CharField(required=True, label="Patient Name")

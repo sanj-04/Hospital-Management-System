@@ -170,18 +170,18 @@
         <input type="text" onkeyup="filter_patient()" id="id_filter_patient" class="form-control my-2" placeholder="Filter Patient(s)">
         <div class="accordion" id="patients">
           <ul class="list-group">
-            {% for patient in patients %}
-            <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient" id="patient_{{patient.id}}"
-              data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
-              {{patient.name}}
-            </li>
-            {% endfor %}
             <li style="cursor: pointer;" id="add_patient" onclick="$('#addPatient').modal('show');"
               class="card-body list-group-item list-group-item-action border border-dark patient text-center">
               <button type="button" class="btn btn-sm btn-success col-block">
                 Add Patient
               </button>
             </li>
+            {% for patient in patients %}
+            <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient" id="patient_{{patient.id}}"
+              data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
+              {{patient.name}}
+            </li>
+            {% endfor %}
           </ul>
         </div>
       </div>
@@ -347,6 +347,18 @@
 
   <script type="application/javascript">
     $(function(){
+      $('.datepicker').datepicker({
+        // startDate: '{{start_date}}',
+        // endDate: '{{last_date}}',
+        format: 'dd-M-yyyy',
+        autoclose: true,
+        monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+        monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        daysOfWeekDisabled: [0,6],
+        weekStart: 1,
+        calendarWeeks: true,
+      });
+
       document.getElementById('addBtn').addEventListener('click', event => {
         form = `<div class="input-group input-group-sm mb-3">
           <input type="text" name="medicine_name" class="form-control form-control-sm my-2" placeholder="Medicine Name" style="width: 130px;" list="id_medicine_list" autocomplete="off">
