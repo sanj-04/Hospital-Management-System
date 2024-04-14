@@ -121,7 +121,7 @@ def adminpg(request):
             context["patientForm"] = patientFormObj
             ver = request.GET.get('ver', '0')
             if ver == '0':
-                return render(request, 'admin_home.html', context)
+                return render(request, 'doctor_home.html', context)
             else:
                 return render(request, 'adminpg.html', context)
         
