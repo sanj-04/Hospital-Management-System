@@ -83,7 +83,7 @@
             Add Prescription(s) for <span id="prescriptionPatientName"></span>
             <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="card-body text-dark" id="PrescriptionModalBody"></div>
+          <div class="card-body" id="PrescriptionModalBody"></div>
           <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-primary float-left" id="addBtn">Add</button>
             <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="$('#addPrescriptionModal').modal('hide');">Close</button>
@@ -113,7 +113,7 @@
       <div class="modal-body">
         <div class="card border-dark mb-3">
           <div class="card-header"></div>
-          <div class="card-body text-dark" id="alertModalBody">
+          <div class="card-body" id="alertModalBody">
             <p id="alertMessage"></p>
           </div>
           <div class="modal-footer justify-content-between">
@@ -135,7 +135,7 @@
             Add Patient Detail
             <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="card-body text-dark" id="addPatientModalBody">
+          <div class="card-body" id="addPatientModalBody">
             <div class='col-md-12'>{{ patientForm.patient | as_crispy_field }}</div>
             <div class="row">
               <div class='col-md-6'>{{ patientForm.date_of_birth | as_crispy_field }}</div>
