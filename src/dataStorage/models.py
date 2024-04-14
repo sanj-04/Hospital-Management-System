@@ -146,7 +146,7 @@ class Token(models.Model):
 class Schedule(models.Model):
     schedule_month_year = models.DateField(blank=True, null=True)
     schedule_json = models.JSONField(blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=9, choices=schedule_status_choices, default="Active")
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updateTimestamp = models.DateTimeField(auto_now=True, blank=True, null=True)
 
@@ -155,4 +155,4 @@ class Schedule(models.Model):
         managed = True
 
     def __str__(self):
-        return str(self.schedule_month.strftime('%B-%Y'))
+        return str(self.schedule_month_year.strftime('%B-%Y'))

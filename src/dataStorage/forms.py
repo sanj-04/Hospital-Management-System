@@ -31,7 +31,7 @@ class PatientForm(forms.ModelForm):
                 format='%Y-%m-%d',
                 attrs={
                     'tabindex' : "1",
-                    'class': 'datepicker',
+                    'class': 'datepicker_single',
                     'data-date-format': 'dd/mm/yyyy',
                     'required': 'required',
                 }

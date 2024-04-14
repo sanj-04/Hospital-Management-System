@@ -65,6 +65,15 @@
   color: white;
   background-color: #198754;
 }
+
+.ui-datepicker, .datepicker-dropdown, .dropdown-menu, .table-condensed {
+  width: 350px;
+}
+
+.disabled-date {
+  color: red;
+  text-color: red;
+}
 {% endblock styles %}
 
 {% block content %}
@@ -300,11 +309,11 @@
       <tbody id="schedule_tableBody">
         {% for schedule in schedules %}
         <tr>
-          <td>{{schedule.month_year}}</td>
+          <td>{{schedule.schedule_month_year}}</td>
           <td>
-            <span name="span_unavailable_count_update">{{schedule.unavailable_count}}</span>
+            <span name="span_unavailable_count_update">{{schedule.rejected_days_count}}</span>
             <input type="datetime-local" name="id_unavailable_count_update"
-              class="textinput textInput form-control" hidden value="{{schedule.unavailable_days}}">
+              class="textinput textInput form-control" hidden value="{{schedule.rejected_days}}">
           </td>
           <td>
             <span name="span_schedule_status_update">{{schedule.status}}</span>
@@ -327,7 +336,7 @@
             <input type="month" name="schedule_month" autocomplete="off" class="form-control" id="id_schedule_month_insert">
           </td>
           <td>
-            <input type="date" id="id_schedule_days_insert" class="textinput textInput form-control">
+            <input type="text" id="id_schedule_days_insert" class="datepicker_multiple form-control">
           </td>
           <td>
             <select name="schedule_status" id="id_schedule_status_insert" class="form-select">
@@ -347,7 +356,7 @@
 
   <script type="application/javascript">
     $(function(){
-      $('.datepicker').datepicker({
+      $('.datepicker_single').datepicker({
         // startDate: '{{start_date}}',
         // endDate: '{{last_date}}',
         format: 'dd-M-yyyy',
@@ -357,6 +366,23 @@
         daysOfWeekDisabled: [0,6],
         weekStart: 1,
         calendarWeeks: true,
+      });
+
+      $('.datepicker_multiple').datepicker({
+        startDate: new Date(),
+        // endDate: '{{last_date}}',
+        multidate: true,
+        // autoclose: true,
+        calendarWeeks: true,
+        format: "dd-M-yyyy",
+        daysOfWeekHighlighted: "0",
+        daysOfWeekDisabled: [0],
+        datesDisabled: ['16-04-2024'],
+        language: 'en',
+        weekStart: 1,
+      }).on('changeDate', function(e) {
+        $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
+        console.log(e.dates.length);
       });
 
       document.getElementById('addBtn').addEventListener('click', event => {
@@ -574,6 +600,40 @@
           'from_date_time': from_date_time,
           'to_date_time': to_date_time,
           'appointment_status': appointment_status,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse,textMsg, xhr) {
+          window.scrollTo(0, 0);
+          location.reload();
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert('Please fill in all fields.');
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function scheduleInsertRow() {
+      let schedule_month = document.getElementById('id_schedule_month_insert').value;
+      let schedule_days = document.getElementById('id_schedule_days_insert').value;
+      let schedule_status = document.getElementById('id_schedule_status_insert').value;
+      $.ajax({
+        url : "{% url 'dataStorage:schedule_operation' %}",
+        type : "POST",
+        data : {
+          'schedule_month': schedule_month,
+          'schedule_days': schedule_days,
+          'schedule_status': schedule_status,
           'csrfmiddlewaretoken': '{{ csrf_token }}'
         },
         beforeSend: function (xhr) {

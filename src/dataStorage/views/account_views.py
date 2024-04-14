@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.http.request import QueryDict
 from datetime import datetime
-from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
+from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription, Schedule
 from dataStorage.models import status_choices, schedule_status_choices
 from dataStorage.forms import PatientForm
 import json, hashlib
@@ -92,6 +92,7 @@ def adminpg(request):
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
         appointmentObjs = Appointment.objects.all().order_by('from_date_time')
+        scheduleObjs = Schedule.objects.all()
         patientFormObj = PatientForm()
         context = {
             "patients" : [{
@@ -113,6 +114,13 @@ def adminpg(request):
                 "appointment_to_date_time_str": appointment.to_date_time.strftime('%d-%b-%Y %I:%M %p'),
                 "appointment_status": appointment.status,
             } for appointment in appointmentObjs],
+            "schedules" : [{
+                "schedule_id": scheduleObj.id,
+                "schedule_month_year": scheduleObj.schedule_month_year.strftime('%B-%Y'),
+                "rejected_days": scheduleObj.schedule_json.get('rejected_days'),
+                "rejected_days_count": f"{len(scheduleObj.schedule_json.get('rejected_days'))} day(s)",
+                "status": scheduleObj.status,
+            } for scheduleObj in scheduleObjs],
         }
 
         if not request.is_ajax():

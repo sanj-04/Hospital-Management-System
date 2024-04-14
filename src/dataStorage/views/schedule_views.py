@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.http.request import QueryDict
-from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
+from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription, Schedule
 from datetime import datetime
 import json, hashlib
 
@@ -27,35 +27,24 @@ def schedule_operation(request):
         }, status=200)
     
     elif request.method == "POST" and request.is_ajax():
-        patient_name = request.POST.get('patient_name')
-        date_of_birth = request.POST.get('date_of_birth')
-        date_of_birthObj = datetime.strptime(date_of_birth, "%Y-%m-%d")
-        phone_number = request.POST.get('phone_number')
-        try:
-            userObj = User.objects.get(username = patient_name)
-        except User.DoesNotExist as e:
-            userObj = User.objects.create_user(
-                username = patient_name,
-                email = None,
-                password = phone_number,
-            )
-            userObj.save()
-        try:
-            patientObj = Patient.objects.get(user_id = userObj.id)
-        except Patient.DoesNotExist:
-            patientObj = Patient.objects.create(
-                user_id = userObj.id,
-                date_of_birth = date_of_birthObj.date(),
-                phone_number = phone_number,
-            )
-
-            return JsonResponse({
-                "message": f"Created patient {patient_name} by {request.user.username}",
-            }, status=200)
-
+        schedule_month = request.POST.get('schedule_month')
+        schedule_monthObj = datetime.strptime(schedule_month, "%Y-%m")
+        schedule_days = request.POST.get('schedule_days').split(',')
+        schedule_days_list = [datetime.strptime(schedule_day, "%d-%b-%Y").strftime('%d-%m-%Y')
+            for schedule_day in schedule_days if datetime.strptime(schedule_day, "%d-%b-%Y").month == schedule_monthObj.month]
+        schedule_status = request.POST.get('schedule_status')
+        schedule_json = {
+            "rejected_days": schedule_days_list,
+        }
+        
+        Schedule.objects.create(
+            schedule_month_year = schedule_monthObj,
+            schedule_json = schedule_json,
+            status = schedule_status,
+        )
         return JsonResponse({
-            "message": f"Failed to Create patient {patient_name} by {request.user.username}",
-        }, status=404)
+            "message": f"Created Schedule {schedule_month} by {request.user.username}",
+        }, status=200)
     
     elif request.method == "PUT" and request.is_ajax():
         patient_id = QueryDict(request.body).get('patient_id')
