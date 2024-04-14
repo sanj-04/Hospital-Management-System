@@ -80,31 +80,13 @@
 		{% endif %}
 		<title>{% block title %}MedIQ{% endblock title %}</title>
 	</head>
-	<body class="text-white bg-dark" id="bgTag" {% block bodyTag %}{% endblock bodyTag %}>
+	<body class="text-white bg-dark" id="bgTag" data-bs-theme="dark" {% block bodyTag %}{% endblock bodyTag %}>
 		{% block javascriptEnd %}{% endblock javascriptEnd %}
 		{% include 'navbar.html' %}
 		{% include 'bot_index.html' %}	
 		<main role="main" class="container">
 			{% block content %}{% endblock content %}
 		</main>
-	<!-- <script type="text/javascript">
-		const btn = document.querySelector('#darkMode')
-		const bg = document.querySelector('#bgTag')
-		btn.onclick = () => {
-			darkModeOn = bg.classList.contains("bg-dark")
-			if(darkModeOn === true){
-				btn.classList.remove("bi-lightbulb-off")
-				btn.classList.add("bi-lightbulb")
-				bg.classList.remove("bg-dark")
-				bg.classList.remove("text-white")
-			}else if(darkModeOn === false){
-				btn.classList.remove("bi-lightbulb")
-				btn.classList.add("bi-lightbulb-off")
-				bg.classList.add("bg-dark")
-				bg.classList.add("text-white")
-			}
-		}
-    </script> -->
 	<script type="text/javascript">
 		$(function() {
 			let btn = document.querySelector('#darkMode');
@@ -115,11 +97,13 @@
 				btn.classList.add("bi-lightbulb-off");
 				bg.classList.add("bg-dark");
 				bg.classList.add("text-white");
+				bg.setAttribute("data-bs-theme", "dark");
 			} else {
 				btn.classList.remove("bi-lightbulb-off");
 				btn.classList.add("bi-lightbulb");
 				bg.classList.remove("bg-dark");
 				bg.classList.remove("text-white");
+				bg.setAttribute("data-bs-theme", "light");
 			}
 
 			btn.addEventListener("click", function(event) {
@@ -130,12 +114,14 @@
 					bg.classList.remove("bg-dark");
 					bg.classList.remove("text-white");
 					localStorage.setItem("theme", 'light');
+					bg.setAttribute("data-bs-theme", "light");
 				} else {
 					btn.classList.remove("bi-lightbulb");
 					btn.classList.add("bi-lightbulb-off");
 					bg.classList.add("bg-dark");
 					bg.classList.add("text-white");
 					localStorage.setItem("theme", 'dark');
+					bg.setAttribute("data-bs-theme", "dark");
 				}
 			});
 		});
