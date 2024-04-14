@@ -80,6 +80,11 @@ def pres(request):
     context = {}
     return render(request, 'pres.html', context)
 
+def bot(request):
+    context = {}
+    return render(request, 'bot_index.html', context)
+
+@login_required
 def adminpg(request):
     if request.method == "GET" and not request.is_ajax():
         patientObjs = Patient.objects.all()
