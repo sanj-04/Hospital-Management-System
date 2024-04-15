@@ -61,7 +61,7 @@ def patient_operation(request):
         patient_id = QueryDict(request.body).get('patient_id')
         prescription = QueryDict(request.body).get('prescription')
 
-        doctorObj = Doctor.objects.get(user = request.user)
+        doctorObj = Doctor.objects.get(user_id = request.user.id)
         patientObj = Patient.objects.get(id=int(patient_id))
         prescription_json = json.loads(prescription)
         prescriptionObj = Prescription.objects.create(

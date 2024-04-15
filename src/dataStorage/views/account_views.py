@@ -87,7 +87,7 @@ def bot(request):
     return render(request, 'bot_index.html', context)
 
 @login_required
-def adminpg(request):
+def doctor_home(request):
     if request.method == "GET":
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()

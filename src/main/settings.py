@@ -53,6 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'dataStorage.middleware.TOTPMiddleware',
     'dataStorage.middleware.AjaxMiddleware',
+    # 'dataStorage.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'

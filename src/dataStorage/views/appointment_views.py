@@ -44,7 +44,7 @@ def appointment_operation(request):
         appointment_status = request.POST.get('appointment_status', 'Pending')
         from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
         to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
-        doctorObj = Doctor.objects.get(user = request.user)
+        doctorObj = Doctor.objects.get(user_id = request.user.id)
         appointmentObj = Appointment.objects.create(
             doctor = doctorObj,
             patient = patientObj,

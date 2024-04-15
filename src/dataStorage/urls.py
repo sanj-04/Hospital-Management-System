@@ -12,7 +12,6 @@ urlpatterns = [
 	path('', views.home, name='home'),
 	# path("reset_password/",auth_views.PasswordResetView.as_view(), name="reset_password"),
 	path('dashboard', views.dashboard, name='dashboard'),
-	path('adminpg', views.adminpg, name='adminpg'),
 	path('pres', views.pres, name='pres'),
 	# path('cards', views.cards, name='cards'),
 	path('cards', TemplateView.as_view(template_name="cards.html"), name='cards'),
@@ -27,6 +26,7 @@ urlpatterns = [
 	path('bot_chat', views.bot_chat, name='bot_chat'),
 	path('bot', views.bot, name='bot'),
     
+	path('doctor_home', views.doctor_home, name='doctor_home'),
 	path('patient_operation', views.patient_operation, name='patient_operation'),
 	path('appointment_operation', views.appointment_operation, name='appointment_operation'),
 	path('schedule_operation', views.schedule_operation, name='schedule_operation'),

@@ -825,7 +825,7 @@
 
     function doctor_homeReload() {
       $.ajax({
-          url : "{% url 'dataStorage:adminpg' %}",
+          url : "{% url 'dataStorage:doctor_home' %}",
           type : "GET",
           data : {},
           beforeSend: function (xhr) {},

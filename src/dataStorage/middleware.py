@@ -1,7 +1,8 @@
 # from django_otp.plugins.otp_totp.models import TOTPDevice
 # from django.db.models import Q
-# from django.shortcuts import redirect
-# from django.utils.deprecation import MiddlewareMixin
+from django.shortcuts import redirect
+from django.utils.deprecation import MiddlewareMixin
+from dataStorage.models import Patient, Doctor
 # from django.contrib import messages
 # from django.contrib.auth import logout
 # from django.contrib.sessions.models import Session
@@ -32,3 +33,25 @@ class AjaxMiddleware:
         request.is_ajax = is_ajax.__get__(request)
         response = self.get_response(request)
         return response
+
+class AccountMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        if request.user.is_authenticated:
+            try:
+                Doctor.objects.get(user_id = request.user.id)
+                is_doctor = True
+            except Doctor.DoesNotExist:
+                is_doctor = False
+
+            try:
+                Patient.objects.get(user_id = request.user.id)
+                is_patient = True
+            except Patient.DoesNotExist:
+                is_patient = False
+            
+            fullUrl = request.get_full_path().split('?')[0]
+            if is_doctor and "/doctor_home" not in fullUrl:
+                return redirect('dataStorage:doctor_home')
+            
+            if is_patient and "/bot" not in fullUrl:
+                return redirect('dataStorage:bot')
