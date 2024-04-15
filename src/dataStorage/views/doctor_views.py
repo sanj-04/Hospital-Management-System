@@ -57,11 +57,11 @@ def doctor_home(request):
                 }
                 for scheduleObj in scheduleObjs
             ],
+            "status_choices": status_choices,
+            "schedule_status_choices": schedule_status_choices,
         }
 
         if not request.is_ajax():
-            context["status_choices"] = status_choices
-            context["schedule_status_choices"] = schedule_status_choices
             context["patientForm"] = patientFormObj
             ver = request.GET.get("ver", "0")
             if ver == "0":

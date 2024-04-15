@@ -185,13 +185,13 @@
         <div class="accordion" id="patients">
           <ul class="list-group">
             <li style="cursor: pointer;" id="add_patient" onclick="$('#addPatient').modal('show');"
-              class="card-body list-group-item list-group-item-action border border-dark patient text-center">
+              class="card-body list-group-item list-group-item-action border border-dark text-center">
               <button type="button" class="btn btn-sm btn-success col-block">
                 Add Patient
               </button>
             </li>
             {% for patient in patients %}
-            <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient" id="patient_{{patient.id}}"
+            <li style="cursor: pointer;" class="card-body list-group-item list-group-item-action border border-dark patient text-left" id="patient_{{patient.id}}"
               data-patient_id="{{patient.id}}" data-patient_name="{{patient.name}}" data-patient_age="{{patient.age}}" onclick="showPatientDetails(this);">
               {{patient.name}}
             </li>
@@ -230,7 +230,7 @@
     </div>
   </div>
   <div class="tab-pane fade" id="appointment_tab" role="tabpanel" aria-labelledby="appointment_tab">
-    <table class="table table-hover table-fixed table-sm table-success">
+    <table class="table table-hover table-fixed table-sm table-success" id="appointment_table">
       <thead>
         <tr>
           <th rowspan="2" style="vertical-align: middle;">Patient ID</th>
@@ -247,23 +247,23 @@
       </thead>
       <tbody id="appointment_tableBody">
         {% for appointment in appointments %}
-        <tr>
+        <tr class="appointment">
           <td>{{appointment.patient_id}}</td>
           <td>{{appointment.patient_name}}</td>
           <td>
             <span name="span_appointment_date_update">{{appointment.appointment_date}}</span>
             <input type="text" name="id_appointment_date_update"
-              class="datepicker_single form-control" hidden value="{{appointment.appointment_date}}">
+              class="datepicker_single form-control" hidden value="{{appointment.appointment_date}}"></input>
           </td>
           <td>
             <span name="span_appointment_from_time_update">{{appointment.appointment_from_time_str}}</span>
             <input type="time" name="id_appointment_from_time_update"
-              class="form-control" hidden value="{{appointment.appointment_from_time}}">
+              class="form-control" hidden value="{{appointment.appointment_from_time}}"></input>
           </td>
           <td>
             <span name="span_appointment_to_time_update">{{appointment.appointment_to_time_str}}</span>
             <input type="time" name="id_appointment_to_time_update"
-              class="form-control" hidden value="{{appointment.appointment_to_time}}">
+              class="form-control" hidden value="{{appointment.appointment_to_time}}"></input>
           </td>
           <td>
             <span name="span_appointment_status_update">{{appointment.appointment_status}}</span>
@@ -314,7 +314,7 @@
     </table>
   </div>
   <div class="tab-pane fade" id="schedule_tab" role="tabpanel" aria-labelledby="schedule_tab">
-    <table class="table table-hover table-fixed table-sm table-success">
+    <table class="table table-hover table-fixed table-sm table-success" id="schedule_table">
       <thead>
         <tr>
           <th>Schedule Month Year</th>
@@ -325,7 +325,7 @@
       </thead>
       <tbody id="schedule_tableBody">
         {% for schedule in schedules %}
-        <tr>
+        <tr class="schedule">
           <td>{{schedule.schedule_month_year}}</td>
           <td>
             <span name="span_unavailable_count_update">{{schedule.rejected_days_count}}</span>
@@ -444,7 +444,11 @@
         success : function(HttpResponse, textMsg, xhr) {
           notify_message(HttpResponse.message, 'success');
           window.scrollTo(0, 0);
-          location.reload();
+          $('#addPatient').modal('hide');
+          doctor_homeReload();
+          document.getElementById('id_patient').value = "";
+          document.getElementById('id_date_of_birth').value = "";
+          document.getElementById('id_phone_number').value = "";
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
@@ -545,7 +549,12 @@
         },
         success : function(HttpResponse,textMsg, xhr) {
           window.scrollTo(0, 0);
-          location.reload();
+          doctor_homeReload();
+          document.getElementById('id_appointment_patient_insert').value = "";
+          document.getElementById('id_appointment_date_insert').value = "";
+          document.getElementById('id_appointment_from_time_insert').value = "";
+          document.getElementById('id_appointment_to_time_insert').value = "";
+          document.getElementById('id_appointment_status_insert').value = "";
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
@@ -579,7 +588,10 @@
         },
         success : function(HttpResponse,textMsg, xhr) {
           window.scrollTo(0, 0);
-          location.reload();
+          doctor_homeReload();
+          document.getElementById('id_schedule_month_insert').value = "";
+          document.getElementById('id_schedule_days_insert').value = "";
+          document.getElementById('id_schedule_status_insert').value = "";
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
@@ -619,7 +631,7 @@
         },
         success : function(HttpResponse,textMsg, xhr) {
           window.scrollTo(0, 0);
-          location.reload();
+          doctor_homeReload();
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
@@ -655,7 +667,7 @@
         },
         success : function(HttpResponse,textMsg, xhr) {
           window.scrollTo(0, 0);
-          location.reload();
+          doctor_homeReload();
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
@@ -685,8 +697,8 @@
           },
           success : function(HttpResponse,textMsg, xhr) {
             window.scrollTo(0, 0);
-            // doctor_homeReload();
-            location.reload();
+            doctor_homeReload();
+            $('#alertModal').modal('hide');
           },
           error : function(xhr, errmsg, err) {
             window.scrollTo(0, 0);
@@ -694,8 +706,8 @@
           },
           statusCode: {
             401: function() {
-                window.scrollTo(0, 0);
-                location.reload();
+              window.scrollTo(0, 0);
+              location.reload();
             }
           }
       });
@@ -709,7 +721,7 @@
           beforeSend: function (xhr) {},
           success : function(HttpResponse, textMsg, xhr) {
             window.scrollTo(0, 0);
-            console.log(HttpResponse);
+            reloadElements(HttpResponse.data);
           },
           error : function(xhr, errmsg, err) {
             window.scrollTo(0, 0);
@@ -717,8 +729,8 @@
           },
           statusCode: {
             401: function() {
-                window.scrollTo(0, 0);
-                location.reload();
+              window.scrollTo(0, 0);
+              location.reload();
             }
           }
       });
@@ -738,7 +750,8 @@
           },
           success : function(HttpResponse,textMsg, xhr) {
             window.scrollTo(0, 0);
-            location.reload();
+            doctor_homeReload();
+            $('#alertModal').modal('hide');
           },
           error : function(xhr, errmsg, err) {
             window.scrollTo(0, 0);
@@ -746,8 +759,8 @@
           },
           statusCode: {
             401: function() {
-                window.scrollTo(0, 0);
-                location.reload();
+              window.scrollTo(0, 0);
+              location.reload();
             }
           }
       });
