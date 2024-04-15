@@ -143,7 +143,10 @@ STATICFILES_DIRS = [
 STATIC_ROOT = ROOT_DIR / "Files/staticFile"
 MEDIA_ROOT = ROOT_DIR / "Files/mediaFile"
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "dataStorage:home"
+LOGIN_URL = "auth_login"
+LOGOUT_URL = "auth_logout"
+
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
