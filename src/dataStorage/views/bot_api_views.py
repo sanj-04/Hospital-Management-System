@@ -7,12 +7,10 @@ import pyotp
 from base64 import b32encode
 from binascii import unhexlify
 
-
 def get_token(hex_key):
     secret = b32encode((unhexlify(hex_key))).decode("UTF-8")
     totp = pyotp.TOTP(secret)
     return totp.now()
-
 
 # @login_required
 @csrf_exempt
