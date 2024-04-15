@@ -52,8 +52,8 @@ function showUpdateForm(button) {
     let patient_name = row.cells[1].textContent;
 
     document.getElementById('id_patient_update').value = patient_name;
-    document.getElementById('id_from_date_time_update').value = from_date_time;
-    document.getElementById('id_to_date_time_update').value = to_date_time;
+    document.getElementById('id_date_update').value = from_date_time;
+    document.getElementById('id_date_update').value = to_date_time;
     document.getElementById('id_appointment_id_update').value = appointment_id;
     document.getElementById('id_patient_id_update').value = patient_id;
     updateForm.style.display = 'block';

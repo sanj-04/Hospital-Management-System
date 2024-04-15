@@ -18,18 +18,9 @@ def appointment_operation(request):
                     "appointment_id": appointment.id,
                     "patient_id": appointment.patient.id,
                     "patient_name": appointment.patient.user.username,
-                    "appointment_from_date_time": appointment.from_date_time.strftime(
-                        "%Y-%m-%dT%H:%M"
-                    ),
-                    "appointment_to_date_time": appointment.to_date_time.strftime(
-                        "%Y-%m-%dT%H:%M"
-                    ),
-                    "appointment_from_date_time_str": appointment.from_date_time.strftime(
-                        "%d-%b-%Y %I:%M %p"
-                    ),
-                    "appointment_to_date_time_str": appointment.to_date_time.strftime(
-                        "%d-%b-%Y %I:%M %p"
-                    ),
+                    "appointment_date": appointment.appointment_date.strftime("%d-%b-%Y"),
+                    "appointment_from_time": appointment.from_time.strftime("%H:%M"),
+                    "appointment_to_time": appointment.to_time.strftime("%H:%M"),
                     "appointment_status": appointment.status,
                 }
                 for appointment in appointmentObjs
@@ -45,23 +36,29 @@ def appointment_operation(request):
         return render(request, "appointment.html", context)
 
     elif request.method == "POST" and request.is_ajax():
-        patient = request.POST.get("patient")
+        appointment_patient = request.POST.get("appointment_patient")
         try:
-            patientObj = Patient.objects.get(id=int(patient))
+            patientObj = Patient.objects.get(id = int(appointment_patient))
         except ValueError as ve:
-            patientObj = Patient.objects.get(user__username=patient)
-        from_date_time = request.POST.get("from_date_time")
-        to_date_time = request.POST.get("to_date_time")
+            patientObj = Patient.objects.get(user__username = appointment_patient)
+        
+        appointment_date = request.POST.get("appointment_date")
+        appointment_from_time = request.POST.get("appointment_from_time")
+        appointment_to_time = request.POST.get("appointment_to_time")
         appointment_status = request.POST.get("appointment_status", "Pending")
-        from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
-        to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
+
+        appointment_dateObj = datetime.strptime(appointment_date, "%d-%b-%Y")
+        appointment_from_timeObj = datetime.strptime(appointment_from_time, "%H:%M")
+        appointment_to_timeObj = datetime.strptime(appointment_to_time, "%H:%M")
+
         doctorObj = Doctor.objects.get(user_id=request.user.id)
         appointmentObj = Appointment.objects.create(
-            doctor=doctorObj,
-            patient=patientObj,
-            from_date_time=from_date_timeObj,
-            to_date_time=to_date_timeObj,
-            status=appointment_status,
+            doctor = doctorObj,
+            patient = patientObj,
+            appointment_date = appointment_dateObj,
+            from_time = appointment_from_timeObj,
+            to_time = appointment_to_timeObj,
+            status = appointment_status,
         )
         return JsonResponse(
             {
@@ -72,15 +69,19 @@ def appointment_operation(request):
 
     elif request.method == "PUT" and request.is_ajax():
         appointment_id = QueryDict(request.body).get("appointment_id")
-        from_date_time = QueryDict(request.body).get("from_date_time")
-        to_date_time = QueryDict(request.body).get("to_date_time")
+        appointment_date = QueryDict(request.body).get("appointment_date")
+        appointment_from_time = QueryDict(request.body).get("appointment_from_time")
+        appointment_to_time = QueryDict(request.body).get("appointment_to_time")
         appointment_status = QueryDict(request.body).get("appointment_status")
-        from_date_timeObj = datetime.strptime(from_date_time, "%Y-%m-%dT%H:%M")
-        to_date_timeObj = datetime.strptime(to_date_time, "%Y-%m-%dT%H:%M")
+
+        appointment_dateObj = datetime.strptime(appointment_date, "%d-%b-%Y")
+        appointment_from_timeObj = datetime.strptime(appointment_from_time, "%H:%M")
+        appointment_to_timeObj = datetime.strptime(appointment_to_time, "%H:%M")
 
         appointmentObj = Appointment.objects.get(id=appointment_id)
-        appointmentObj.from_date_time = from_date_timeObj
-        appointmentObj.to_date_time = to_date_timeObj
+        appointmentObj.appointment_date = appointment_dateObj
+        appointmentObj.from_time = appointment_from_timeObj
+        appointmentObj.to_time = appointment_to_timeObj
         if appointment_status:
             appointmentObj.status = appointment_status
         appointmentObj.save()
@@ -93,7 +94,7 @@ def appointment_operation(request):
 
     elif request.method == "DELETE" and request.is_ajax():
         appointment_id = QueryDict(request.body).get("appointment_id")
-        appointmentObj = Appointment.objects.get(id=appointment_id)
+        appointmentObj = Appointment.objects.get(id = appointment_id)
         appointmentObj.delete()
         return JsonResponse(
             {

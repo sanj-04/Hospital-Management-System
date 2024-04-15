@@ -53,11 +53,11 @@
         <label for="id_patient_update">Patient:</label>
         <input type="text" name="patient" autocomplete="off" class="textinput textInput form-control" id="id_patient_update" disabled>
         <br><br>
-        <label for="id_from_date_time_update">Appointment From Date and Time:</label>
-        <input type="datetime-local" id="id_from_date_time_update" class="textinput textInput form-control">
+        <label for="id_date_update">Appointment From Date and Time:</label>
+        <input type="datetime-local" id="id_date_update" class="textinput textInput form-control">
         <br><br>
-        <label for="id_to_date_time_update">Appointment To Date and Time:</label>
-        <input type="datetime-local" id="id_to_date_time_update" class="textinput textInput form-control">
+        <label for="id_date_update">Appointment To Date and Time:</label>
+        <input type="datetime-local" id="id_date_update" class="textinput textInput form-control">
         <br>
         <input type="hidden" id="id_appointment_id_update" class="textinput textInput form-control">
         <input type="hidden" id="id_patient_id_update" class="textinput textInput form-control">
@@ -126,8 +126,8 @@
         }
 
         function updateRow() {
-            let from_date_time = document.getElementById('id_from_date_time_update').value;
-            let to_date_time = document.getElementById('id_to_date_time_update').value;
+            let from_date_time = document.getElementById('id_date_update').value;
+            let to_date_time = document.getElementById('id_date_update').value;
             let appointment_id = document.getElementById('id_appointment_id_update').value;
             $.ajax({
                 url : "{% url 'dataStorage:appointment_operation' %}",

@@ -115,7 +115,7 @@ def doctor_home(request):
     if request.method == "GET":
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
-        appointmentObjs = Appointment.objects.all().order_by("from_date_time")
+        appointmentObjs = Appointment.objects.all().order_by("appointment_date")
         scheduleObjs = Schedule.objects.filter(doctor_id=request.user.id)
         patientFormObj = PatientForm()
         context = {
@@ -139,18 +139,11 @@ def doctor_home(request):
                     "appointment_id": appointment.id,
                     "patient_id": appointment.patient.id,
                     "patient_name": appointment.patient.user.username,
-                    "appointment_from_date_time": appointment.from_date_time.strftime(
-                        "%Y-%m-%dT%H:%M"
-                    ),
-                    "appointment_to_date_time": appointment.to_date_time.strftime(
-                        "%Y-%m-%dT%H:%M"
-                    ),
-                    "appointment_from_date_time_str": appointment.from_date_time.strftime(
-                        "%d-%b-%Y %I:%M %p"
-                    ),
-                    "appointment_to_date_time_str": appointment.to_date_time.strftime(
-                        "%d-%b-%Y %I:%M %p"
-                    ),
+                    "appointment_date": appointment.appointment_date.strftime("%d-%b-%Y"),
+                    "appointment_from_time": appointment.from_time.strftime("%H:%M"),
+                    "appointment_from_time_str": appointment.from_time.strftime("%I:%M %p"),
+                    "appointment_to_time": appointment.to_time.strftime("%H:%M"),
+                    "appointment_to_time_str": appointment.to_time.strftime("%I:%M %p"),
                     "appointment_status": appointment.status,
                 }
                 for appointment in appointmentObjs
