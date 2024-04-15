@@ -1,8 +1,9 @@
 from django.apps import AppConfig
 
-class DatastorageConfig(AppConfig):        
-	default_auto_field = 'django.db.models.BigAutoField'        
-	name = 'dataStorage'        
 
-	def ready(self):        
-		import dataStorage.signals
+class DatastorageConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "dataStorage"
+
+    def ready(self):
+        import dataStorage.signals

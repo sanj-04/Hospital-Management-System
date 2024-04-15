@@ -1,5 +1,13 @@
 from django.contrib import admin
-from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription, Token, Schedule
+from dataStorage.models import (
+    Patient,
+    Appointment,
+    Doctor,
+    Medicine,
+    Prescription,
+    Token,
+    Schedule,
+)
 
 admin.site.register(Patient)
 admin.site.register(Doctor)

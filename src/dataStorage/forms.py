@@ -1,9 +1,11 @@
 from django import forms
 from dataStorage.models import Patient
 
+
 class DateInput(forms.DateInput):
-    input_type = 'text'
+    input_type = "text"
     # input_type = 'date'
+
 
 class PatientForm(forms.ModelForm):
     patient = forms.CharField(required=True, label="Patient Name")
@@ -20,22 +22,22 @@ class PatientForm(forms.ModelForm):
         ]
 
         labels = {
-            "patient"       : "Patient Name",
-            "date_of_birth" : "Date of Birth*",
-            "phone_number"  : "Phone Number",
+            "patient": "Patient Name",
+            "date_of_birth": "Date of Birth*",
+            "phone_number": "Phone Number",
         }
 
         widgets = {
-            "patient"       : forms.TextInput(),
-            "date_of_birth" : DateInput(
-                format='%Y-%m-%d',
+            "patient": forms.TextInput(),
+            "date_of_birth": DateInput(
+                format="%Y-%m-%d",
                 attrs={
-                    'tabindex' : "1",
-                    'class': 'datepicker_single',
-                    'data-date-format': 'dd/mm/yyyy',
-                    'required': 'required',
-                    'autocomplete': 'off',
-                }
+                    "tabindex": "1",
+                    "class": "datepicker_single",
+                    "data-date-format": "dd/mm/yyyy",
+                    "required": "required",
+                    "autocomplete": "off",
+                },
             ),
-            "phone_number"  : forms.TextInput(),
+            "phone_number": forms.TextInput(),
         }

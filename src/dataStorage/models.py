@@ -6,21 +6,29 @@ from datetime import date
 from django.template.defaultfilters import slugify
 from django_otp.util import hex_validator, random_hex
 
-phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+phone_regex = RegexValidator(
+    regex=r"^\+?1?\d{9,15}$",
+    message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
+)
+
 
 def increment_ulid(name):
     return f"{name}_{((ulid.new()).timestamp()).str}"
     # return f"{name}_{((ulid.new()).from_randomness(os.urandom(10))).str}"
     # return f"{name}_{(ulid.from_randomness(os.urandom(10))).str}"
 
+
 def slugify_data(name):
     return slugify(name)
+
 
 def default_key():
     return random_hex(20)
 
+
 def key_validator(value):
     return hex_validator()(value)
+
 
 status_choices = (
     ("Pending", "Pending"),
@@ -34,6 +42,7 @@ schedule_status_choices = (
     ("Active", "Active"),
     ("Deleted", "Deleted"),
 )
+
 
 # Create your models here.
 class Patient(models.Model):
@@ -65,11 +74,12 @@ class Patient(models.Model):
             return "0 year(s)"
 
     class Meta:
-        db_table = 'patients'
+        db_table = "patients"
         managed = True
 
     def __str__(self):
         return str(f"{self.user.username}:{self.age}")
+
 
 class Doctor(models.Model):
     # doctor_id = models.CharField(max_length=40, unique=True, default=increment_ulid("doctor"), editable=True, primary_key=True)
@@ -78,17 +88,22 @@ class Doctor(models.Model):
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True)
 
     class Meta:
-        db_table = 'doctors'
+        db_table = "doctors"
         managed = True
-    
+
     def __str__(self):
         return str(f"{self.user.username}")
+
 
 class Appointment(models.Model):
     # appointment_id = models.CharField(max_length=40, unique=True, default=increment_ulid("appt"), editable=True, primary_key=True)
     # appointment_id = models.SlugField(max_length=40, unique=True, primary_key=True)
-    doctor = models.ForeignKey(Doctor, related_name='doctorLink', on_delete=models.DO_NOTHING)
-    patient = models.ForeignKey(Patient, related_name='patientLink', on_delete=models.DO_NOTHING)
+    doctor = models.ForeignKey(
+        Doctor, related_name="doctorLink", on_delete=models.DO_NOTHING
+    )
+    patient = models.ForeignKey(
+        Patient, related_name="patientLink", on_delete=models.DO_NOTHING
+    )
     from_date_time = models.DateTimeField(blank=True, null=True)
     to_date_time = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=9, choices=status_choices, default="Pending")
@@ -96,11 +111,12 @@ class Appointment(models.Model):
     updateTimestamp = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     class Meta:
-        db_table = 'appointments'
+        db_table = "appointments"
         managed = True
 
     def __str__(self):
         return f"{self.doctor.user.username}:{self.patient.user.username}:{self.createTimestamp.strftime('%d-%b-%Y %I:%M %p')}:{self.status}"
+
 
 class Medicine(models.Model):
     medicine_name = models.CharField(max_length=255, unique=True)
@@ -109,50 +125,63 @@ class Medicine(models.Model):
     updateTimestamp = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     class Meta:
-        db_table = 'medicines'
+        db_table = "medicines"
         managed = True
 
     def __str__(self):
         return str(self.medicine_name)
-    
+
+
 class Prescription(models.Model):
     prescription_json = models.JSONField(blank=True, null=True)
     prescription_hash = models.CharField(max_length=255, unique=True)
-    doctor = models.ForeignKey(Doctor, related_name='doctorPrescriptionLink', on_delete=models.DO_NOTHING)
-    patient = models.ForeignKey(Patient, related_name='patientPrescriptionLink', on_delete=models.DO_NOTHING)
+    doctor = models.ForeignKey(
+        Doctor, related_name="doctorPrescriptionLink", on_delete=models.DO_NOTHING
+    )
+    patient = models.ForeignKey(
+        Patient, related_name="patientPrescriptionLink", on_delete=models.DO_NOTHING
+    )
     is_active = models.BooleanField(default=True)
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
-        db_table = 'prescriptions'
+        db_table = "prescriptions"
         managed = True
 
     def __str__(self):
         return str(self.prescription_name)
-    
+
+
 class Token(models.Model):
-    patient = models.ForeignKey(Patient, related_name='patientTokenLink', on_delete=models.DO_NOTHING)
+    patient = models.ForeignKey(
+        Patient, related_name="patientTokenLink", on_delete=models.DO_NOTHING
+    )
     token_number = models.CharField(max_length=8)
     is_active = models.BooleanField(default=True)
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
-        db_table = 'tokens'
+        db_table = "tokens"
         managed = True
 
     def __str__(self):
         return str(f"{self.patient.user.username}:{self.token_number}")
-    
+
+
 class Schedule(models.Model):
     schedule_month_year = models.DateField(blank=True, null=True)
-    doctor = models.ForeignKey(Doctor, related_name='doctorScheduleLink', on_delete=models.DO_NOTHING)
+    doctor = models.ForeignKey(
+        Doctor, related_name="doctorScheduleLink", on_delete=models.DO_NOTHING
+    )
     schedule_json = models.JSONField(blank=True, null=True)
-    status = models.CharField(max_length=9, choices=schedule_status_choices, default="Active")
+    status = models.CharField(
+        max_length=9, choices=schedule_status_choices, default="Active"
+    )
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updateTimestamp = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     class Meta:
-        db_table = 'schedules'
+        db_table = "schedules"
         managed = True
 
     @property
@@ -160,4 +189,4 @@ class Schedule(models.Model):
         return f"{len(self.schedule_json.get('rejected_days'))} day(s)"
 
     def __str__(self):
-        return str(self.schedule_month_year.strftime('%B-%Y'))
+        return str(self.schedule_month_year.strftime("%B-%Y"))
