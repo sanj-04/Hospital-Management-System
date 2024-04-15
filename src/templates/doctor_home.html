@@ -466,7 +466,6 @@
         type : "GET",
         data : {
           'patient_id': patient_id,
-          'csrfmiddlewaretoken': '{{ csrf_token }}'
         },
         beforeSend: function (xhr) {
           xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
