@@ -145,6 +145,7 @@ class Token(models.Model):
     
 class Schedule(models.Model):
     schedule_month_year = models.DateField(blank=True, null=True)
+    doctor = models.ForeignKey(Doctor, related_name='doctorScheduleLink', on_delete=models.DO_NOTHING)
     schedule_json = models.JSONField(blank=True, null=True)
     status = models.CharField(max_length=9, choices=schedule_status_choices, default="Active")
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)

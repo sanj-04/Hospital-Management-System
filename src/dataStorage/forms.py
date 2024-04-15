@@ -34,6 +34,7 @@ class PatientForm(forms.ModelForm):
                     'class': 'datepicker_single',
                     'data-date-format': 'dd/mm/yyyy',
                     'required': 'required',
+                    'autocomplete': 'off',
                 }
             ),
             "phone_number"  : forms.TextInput(),

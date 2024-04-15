@@ -312,7 +312,7 @@
           <td>{{schedule.schedule_month_year}}</td>
           <td>
             <span name="span_unavailable_count_update">{{schedule.rejected_days_count}}</span>
-            <input type="text" name="id_unavailable_count_update"
+            <input type="text" name="id_unavailable_count_update" autocomplete="off"
               class="datepicker_multiple form-control" hidden value="{{schedule.rejected_days}}">
           </td>
           <td>
@@ -336,7 +336,7 @@
             <input type="month" name="schedule_month" autocomplete="off" class="form-control" id="id_schedule_month_insert">
           </td>
           <td>
-            <input type="text" id="id_schedule_days_insert" class="datepicker_multiple form-control">
+            <input type="text" id="id_schedule_days_insert" class="datepicker_multiple form-control" autocomplete="off">
           </td>
           <td>
             <select name="schedule_status" id="id_schedule_status_insert" class="form-select">

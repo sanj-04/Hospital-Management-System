@@ -92,7 +92,7 @@ def adminpg(request):
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
         appointmentObjs = Appointment.objects.all().order_by('from_date_time')
-        scheduleObjs = Schedule.objects.all()
+        scheduleObjs = Schedule.objects.filter(doctor_id = request.user.id)
         patientFormObj = PatientForm()
         context = {
             "patients" : [{
