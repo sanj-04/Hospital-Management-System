@@ -1,16 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
-from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
+from dataStorage.models import Patient, Appointment, Doctor
 from datetime import datetime
-import json, hashlib
-
-def hash_dict_content(dictionary):
-    json_string = json.dumps(dictionary, sort_keys=True)
-    hash_object = hashlib.sha256(json_string.encode())
-    return hash_object.hexdigest()
 
 @login_required
 def appointment_operation(request):

@@ -117,7 +117,7 @@ def adminpg(request):
             "schedules" : [{
                 "schedule_id": scheduleObj.id,
                 "schedule_month_year": scheduleObj.schedule_month_year.strftime('%B-%Y'),
-                "rejected_days": scheduleObj.schedule_json.get('rejected_days'),
+                "rejected_days": ",".join(scheduleObj.schedule_json.get('rejected_days')),
                 "rejected_days_count": scheduleObj.rejected_days_count,
                 "status": scheduleObj.status,
             } for scheduleObj in scheduleObjs],

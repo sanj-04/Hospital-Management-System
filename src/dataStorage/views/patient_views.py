@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.http.request import QueryDict
-from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription
+from dataStorage.models import Patient, Doctor, Prescription
 from datetime import datetime
 import json, hashlib
 

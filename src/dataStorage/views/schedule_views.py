@@ -1,32 +1,12 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.http.request import QueryDict
-from dataStorage.models import Patient, Appointment, Doctor, Medicine, Prescription, Schedule
+from dataStorage.models import Schedule
 from datetime import datetime
-import json, hashlib
-
-def hash_dict_content(dictionary):
-    json_string = json.dumps(dictionary, sort_keys=True)
-    hash_object = hashlib.sha256(json_string.encode())
-    return hash_object.hexdigest()
 
 @login_required
 def schedule_operation(request):
-    if request.method == "GET" and request.is_ajax():
-        patient_id = request.GET.get('patient_id')
-        prescriptionObjs = Prescription.objects.filter(patient_id = patient_id)
-        prescriptions = [{
-            "id": prescription.id,
-            "name": prescription.createTimestamp.strftime('%d-%b-%Y %I:%M %p'),
-        } for prescription in prescriptionObjs]
-
-        return JsonResponse({
-            "message": f"Fetched Patient ({patient_id}) Prescription's by {request.user.username}",
-            "prescriptions": prescriptions,
-        }, status=200)
-    
-    elif request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and request.is_ajax():
         schedule_month = request.POST.get('schedule_month')
         schedule_monthObj = datetime.strptime(schedule_month, "%Y-%m")
         schedule_days = request.POST.get('schedule_days').split(',')
@@ -47,21 +27,32 @@ def schedule_operation(request):
         }, status=200)
     
     elif request.method == "PUT" and request.is_ajax():
-        patient_id = QueryDict(request.body).get('patient_id')
-        prescription = QueryDict(request.body).get('prescription')
+        schedule_id = QueryDict(request.body).get('schedule_id')
+        unavailable_count = QueryDict(request.body).get('unavailable_count').split(',')
+        schedule_status = QueryDict(request.body).get('schedule_status')
 
-        doctorObj = Doctor.objects.get(user = request.user)
-        patientObj = Patient.objects.get(id=int(patient_id))
-        prescription_json = json.loads(prescription)
-        prescriptionObj = Prescription.objects.create(
-            prescription_hash = hash_dict_content(prescription_json),
-            prescription_json =  prescription_json,
-            doctor = doctorObj,
-            patient = patientObj,
-        )
+        scheduleObj = Schedule.objects.get(id = int(schedule_id))
+        schedule_days_list = [datetime.strptime(schedule_day, "%d-%b-%Y").strftime('%d-%m-%Y')
+            for schedule_day in unavailable_count if datetime.strptime(schedule_day, "%d-%b-%Y").month == scheduleObj.schedule_month_year.month]
+        schedule_json = {
+            "rejected_days": schedule_days_list,
+        }
+
+        scheduleObj.schedule_json = schedule_json
+        scheduleObj.status = schedule_status
+        scheduleObj.save()
         return JsonResponse(
             {
-                'message': f'Added Prescription of {patient_id} by {request.user.username}',
-                'prescription_id': prescriptionObj.id,
+                'message': f'Updated Schedule of {schedule_id} by {request.user.username}',
+            },status=200
+        )
+    
+    elif request.method == "DELETE" and request.is_ajax():
+        schedule_id = QueryDict(request.body).get('schedule_id')
+        scheduleObj = Schedule.objects.get(id = schedule_id)
+        scheduleObj.delete()
+        return JsonResponse(
+            {
+                'message': f'Schedule Deleted {schedule_id} by {request.user.username}',
             },status=200
         )

@@ -312,8 +312,8 @@
           <td>{{schedule.schedule_month_year}}</td>
           <td>
             <span name="span_unavailable_count_update">{{schedule.rejected_days_count}}</span>
-            <input type="datetime-local" name="id_unavailable_count_update"
-              class="textinput textInput form-control" hidden value="{{schedule.rejected_days}}">
+            <input type="text" name="id_unavailable_count_update"
+              class="datepicker_multiple form-control" hidden value="{{schedule.rejected_days}}">
           </td>
           <td>
             <span name="span_schedule_status_update">{{schedule.status}}</span>
@@ -326,7 +326,7 @@
           <td>
             <button onclick="showScheduleUpdateForm(this);" class="btn btn-sm btn-primary">Update</button>
             <button onclick="scheduleConfirmDelete(this);" data-schedule_id="{{schedule.schedule_id}}" class="btn btn-sm btn-danger">Delete</button>
-            <button onclick="scheduleUpdateRow(this);" class="btn btn-sm btn-success" hidden>Done</button>
+            <button onclick="scheduleUpdateRow(this);" data-schedule_id="{{schedule.schedule_id}}" class="btn btn-sm btn-success" hidden>Done</button>
             <button onclick="scheduleCancelUpdate(this);" class="btn btn-sm btn-secondary" hidden>Cancel</button>
           </td>
         </tr>
@@ -673,6 +673,20 @@
       tableRow.querySelector('.btn-secondary').removeAttribute('hidden');
     }
 
+    function showScheduleUpdateForm(button) {
+      let tableRow = button.parentNode.parentNode;
+      tableRow.querySelector('[name="span_unavailable_count_update"]').setAttribute('hidden', '');
+      tableRow.querySelector('[name="span_schedule_status_update"]').setAttribute('hidden', '');
+      tableRow.querySelector('.btn-danger').setAttribute('hidden', '');
+      button.setAttribute('hidden', '');
+
+      tableRow.querySelector('[name="id_unavailable_count_update"]').removeAttribute('hidden');
+      tableRow.querySelector('[name="id_schedule_status_update"]').removeAttribute('hidden');
+
+      tableRow.querySelector('.btn-success').removeAttribute('hidden');
+      tableRow.querySelector('.btn-secondary').removeAttribute('hidden');
+    }
+
     function cancelUpdate(button) {
       let tableRow = button.parentNode.parentNode;
       tableRow.querySelector('[name="span_from_date_time_update"]').removeAttribute('hidden');
@@ -685,6 +699,21 @@
       tableRow.querySelector('[name="id_from_date_time_update"]').setAttribute('hidden', '');
       tableRow.querySelector('[name="id_to_date_time_update"]').setAttribute('hidden', '');
       tableRow.querySelector('[name="id_appointment_status_update"]').setAttribute('hidden', '');
+
+      tableRow.querySelector('.btn-success').setAttribute('hidden', '');
+      tableRow.querySelector('.btn-secondary').setAttribute('hidden', '');
+    }
+
+    function scheduleCancelUpdate(button) {
+      let tableRow = button.parentNode.parentNode;
+      tableRow.querySelector('[name="span_unavailable_count_update"]').removeAttribute('hidden');
+      tableRow.querySelector('[name="span_schedule_status_update"]').removeAttribute('hidden');
+      tableRow.querySelector('.btn-danger').removeAttribute('hidden');
+      tableRow.querySelector('.btn-primary').removeAttribute('hidden');
+      button.setAttribute('hidden', '');
+
+      tableRow.querySelector('[name="id_unavailable_count_update"]').setAttribute('hidden', '');
+      tableRow.querySelector('[name="id_schedule_status_update"]').setAttribute('hidden', '');
 
       tableRow.querySelector('.btn-success').setAttribute('hidden', '');
       tableRow.querySelector('.btn-secondary').setAttribute('hidden', '');
@@ -728,6 +757,95 @@
       });
     }
 
+    function scheduleUpdateRow(button) {
+      let tableRow = button.parentNode.parentNode;
+      let unavailable_count = tableRow.querySelector('[name="id_unavailable_count_update"]').value;
+      let schedule_status = tableRow.querySelector('[name="id_schedule_status_update"]').value;
+      let schedule_id = button.getAttribute('data-schedule_id');
+
+      $.ajax({
+        url : "{% url 'dataStorage:schedule_operation' %}",
+        type : "PUT",
+        data : {
+          'unavailable_count': unavailable_count,
+          'schedule_status': schedule_status,
+          'schedule_id': schedule_id,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse,textMsg, xhr) {
+          window.scrollTo(0, 0);
+          location.reload();
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert("Unable to Updated Schedule.");
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function scheduleDeleteRow(button) {
+      let schedule_id = button.getAttribute('data-schedule_id');
+      $.ajax({
+          url : "{% url 'dataStorage:schedule_operation' %}",
+          type : "DELETE",
+          data : {
+            'schedule_id': schedule_id,
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+          },
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+          },
+          success : function(HttpResponse,textMsg, xhr) {
+            window.scrollTo(0, 0);
+            // doctor_homeReload();
+            location.reload();
+          },
+          error : function(xhr, errmsg, err) {
+            window.scrollTo(0, 0);
+            location.reload();
+          },
+          statusCode: {
+            401: function() {
+                window.scrollTo(0, 0);
+                location.reload();
+            }
+          }
+      });
+    }
+
+    function doctor_homeReload() {
+      $.ajax({
+          url : "{% url 'dataStorage:adminpg' %}",
+          type : "GET",
+          data : {},
+          beforeSend: function (xhr) {},
+          success : function(HttpResponse, textMsg, xhr) {
+            window.scrollTo(0, 0);
+            console.log(HttpResponse);
+          },
+          error : function(xhr, errmsg, err) {
+            window.scrollTo(0, 0);
+            location.reload();
+          },
+          statusCode: {
+            401: function() {
+                window.scrollTo(0, 0);
+                location.reload();
+            }
+          }
+      });
+    }
+
     function deleteRow(button) {
       let appointment_id = button.getAttribute('data-appointment_id');
       $.ajax({
@@ -757,19 +875,28 @@
       });
     }
 
-    function showAlert(message, buttonElement) {
+    function showAlert(message, buttonElement, type) {
       $('#alertModal').modal('show');
       let alertMessage = document.getElementById("alertMessage");
       let confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
       alertMessage.textContent = message;
       confirmDeleteBtn.addEventListener('click', event => {
-        deleteRow(buttonElement);
+        if (type == "appointment") {
+          deleteRow(buttonElement);
+        } else if (type == "schedule") {
+          scheduleDeleteRow(buttonElement);
+        }
       });
     }
 
     function confirmDelete(button) {
-      showAlert("Are you sure you want to delete this patient's Appointment?", button);
+      showAlert("Are you sure you want to delete this patient's Appointment?", button, "appointment");
     }
+
+    function scheduleConfirmDelete(button) {
+      showAlert("Are you sure you want to delete this Schedule?", button, "schedule");
+    }
+    
   </script>
 {% endblock content %}
