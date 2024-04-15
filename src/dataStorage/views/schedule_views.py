@@ -39,14 +39,21 @@ def schedule_operation(request):
         schedule_id = QueryDict(request.body).get("schedule_id")
         unavailable_count = QueryDict(request.body).get("unavailable_count").split(",")
         schedule_status = QueryDict(request.body).get("schedule_status")
-
         scheduleObj = Schedule.objects.get(id=int(schedule_id))
-        schedule_days_list = [
-            datetime.strptime(schedule_day, "%d-%b-%Y").strftime("%d-%m-%Y")
-            for schedule_day in unavailable_count
-            if datetime.strptime(schedule_day, "%d-%b-%Y").month
-            == scheduleObj.schedule_month_year.month
-        ]
+        try:
+            schedule_days_list = [
+                datetime.strptime(schedule_day, "%d-%m-%Y").strftime("%d-%m-%Y")
+                for schedule_day in unavailable_count
+                if datetime.strptime(schedule_day, "%d-%m-%Y").month
+                == scheduleObj.schedule_month_year.month
+            ]
+        except:
+            schedule_days_list = [
+                datetime.strptime(schedule_day, "%d-%b-%Y").strftime("%d-%m-%Y")
+                for schedule_day in unavailable_count
+                if datetime.strptime(schedule_day, "%d-%b-%Y").month
+                == scheduleObj.schedule_month_year.month
+            ]
         schedule_json = {
             "rejected_days": schedule_days_list,
         }

@@ -8,12 +8,9 @@ from django.contrib.auth import views as auth_views
 app_name = "dataStorage"
 
 urlpatterns = [
-    # path('/', login_required(iViews.familyList.as_view()), name='familyList'),
     path("", views.home, name="home"),
     # path("reset_password/",auth_views.PasswordResetView.as_view(), name="reset_password"),
-    path("dashboard", views.dashboard, name="dashboard"),
     path("pres", views.pres, name="pres"),
-    # path('cards', views.cards, name='cards'),
     path("cards", TemplateView.as_view(template_name="cards.html"), name="cards"),
     path("configureDevice/", views.configureDevice, name="configureDevice"),
     path("api/login/", views.KnoxLoginAPI.as_view(), name="api_login"),
