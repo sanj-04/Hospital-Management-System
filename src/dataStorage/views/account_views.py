@@ -1,36 +1,14 @@
 from django.shortcuts import render
 from django.contrib import messages
-from django.urls import reverse, get_resolver
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.signals import (
     user_logged_out,
     user_logged_in,
     user_login_failed,
 )
-from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models import Q
 from django.http import JsonResponse
-from django.http.request import QueryDict
-from datetime import datetime
-from dataStorage.models import (
-    Patient,
-    Appointment,
-    Doctor,
-    Medicine,
-    Prescription,
-    Schedule,
-)
-from dataStorage.models import status_choices, schedule_status_choices
-from dataStorage.forms import PatientForm
-import json, hashlib
-
-
-def hash_dict_content(dictionary):
-    json_string = json.dumps(dictionary, sort_keys=True)
-    hash_object = hashlib.sha256(json_string.encode())
-    return hash_object.hexdigest()
 
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, **kwargs):
@@ -59,7 +37,6 @@ def bot(request):
     context = {}
     return render(request, "bot_index.html", context)
 
-# @ensure_csrf_cookie
 @login_required
 def configureDevice(request):
     if request.method == "GET":

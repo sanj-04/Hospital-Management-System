@@ -1,10 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.http.request import QueryDict
 from django.shortcuts import render
 from dataStorage.models import Patient, Appointment, Medicine, Schedule
 from dataStorage.forms import PatientForm
-from datetime import datetime
 from dataStorage.models import status_choices, schedule_status_choices
 
 @login_required
