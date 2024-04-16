@@ -21,6 +21,7 @@
       <div class="navbar-links">
           {% if request.user.is_authenticated and user %}
           <a {% if request.user.is_staff %}href="{% url 'admin:index' %}"{% endif %} class="nav-link">{{ user }}</a>
+          {% if request.user.is_staff %}<a href="{% url 'dataStorage:doctor_home' %}" class="nav-link">Doctor Home</a>{% endif %}
           {% endif %}
           <a href="#" class="login-link" {% if request.user.is_authenticated and user %}hidden{% endif %}>Login</a>
           <a href="#" class="register-link">Register</a>
