@@ -1,12 +1,16 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from dataStorage.models import Patient, Appointment, Medicine, Schedule, Doctor
 from dataStorage.forms import PatientForm
 from dataStorage.models import status_choices, schedule_status_choices
 
 @login_required
+# @user_passes_test(lambda u: u.is_staff)
 def doctor_home(request):
+    if not request.user.is_staff:
+        return redirect('dataStorage:home')
+
     if request.method == "GET":
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
