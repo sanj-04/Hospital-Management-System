@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
-from dataStorage.models import Patient, Appointment, Medicine, Schedule
+from dataStorage.models import Patient, Appointment, Medicine, Schedule, Doctor
 from dataStorage.forms import PatientForm
 from dataStorage.models import status_choices, schedule_status_choices
 
@@ -12,6 +12,7 @@ def doctor_home(request):
         medicineObjs = Medicine.objects.all()
         appointmentObjs = Appointment.objects.all().order_by("appointment_date")
         scheduleObjs = Schedule.objects.filter(doctor_id=request.user.id)
+        doctorObj = Doctor.objects.get(user=request.user.id)
         patientFormObj = PatientForm()
         context = {
             "patients": [
@@ -59,6 +60,7 @@ def doctor_home(request):
             ],
             "status_choices": status_choices,
             "schedule_status_choices": schedule_status_choices,
+            "unavailable": list(doctorObj.setting_json.get("unavailable_days").values()),
         }
 
         if not request.is_ajax():

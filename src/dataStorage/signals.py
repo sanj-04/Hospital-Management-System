@@ -2,6 +2,8 @@ from django.db.models.signals import post_save
 from django.conf import settings
 from django.dispatch import receiver
 from dataStorage.models import Patient, Doctor
+# from .main.password import fetch
+from credentials.credentials import credentials
 
 # from rest_framework.authtoken.models import Token
 # from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -25,7 +27,10 @@ from dataStorage.models import Patient, Doctor
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def postRegistrations(sender, instance, created, **kwargs):
-    if created and instance.is_superuser:
-        Doctor.objects.create(user=instance)
-    # if created and not instance.is_superuser:
+    if created and instance.is_staff:
+        Doctor.objects.create(
+            user = instance,
+            setting_json = credentials.get("default_setting_json"),
+        )
+    # if created and not instance.is_staff:
     #     Patient.objects.create(user=instance)

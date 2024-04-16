@@ -375,7 +375,7 @@
     $(function(){
       window.setInterval(doctor_homeReload, 5 * 60 * 1000);
 
-      datepicker_operation();
+      datepicker_operation({{unavailable|safe}});
 
       document.getElementById('addBtn').addEventListener('click', event => {
         form = `<div class="input-group input-group-sm mb-3">

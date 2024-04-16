@@ -177,7 +177,7 @@ function addRow(table_id) {
   return tableEle.insertRow(0);
 }
 
-function datepicker_operation() {
+function datepicker_operation(datepicker_operation) {
   $('.datepicker_single').datepicker({
     // startDate: '{{start_date}}',
     // endDate: '{{last_date}}',
@@ -185,24 +185,31 @@ function datepicker_operation() {
     autoclose: true,
     monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
     monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-    daysOfWeekDisabled: [0,6],
-    weekStart: 1,
+    daysOfWeekDisabled: datepicker_operation,// [0,6],
+    weekStart: 0,
     calendarWeeks: true,
   });
 
+  $('.datepicker_single').on('show', function(e) {
+    // $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
+    console.log('Calendar showing.', e);
+  });
+
   $('.datepicker_multiple').datepicker({
-    startDate: new Date(),
+    // startDate: new Date(),
     // endDate: '{{last_date}}',
     multidate: true,
     // autoclose: true,
     calendarWeeks: true,
     format: "dd-M-yyyy",
     daysOfWeekHighlighted: "0",
-    daysOfWeekDisabled: [0],
-    datesDisabled: ['16-04-2024'],
+    daysOfWeekDisabled: datepicker_operation,
+    // datesDisabled: ['16-04-2024'],
     language: 'en',
-    weekStart: 1,
-  }).on('changeDate', function(e) {
+    weekStart: 0,
+  });
+
+  $('.datepicker_multiple').on('changeDate', function(e) {
     $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
     console.log(e.dates.length);
   });
@@ -329,5 +336,5 @@ function reloadElements(data) {
   medicine_listEle.innerHTML = medicine_options;
   patients_listEle.innerHTML = patients_options;
 
-  datepicker_operation();
+  datepicker_operation(data.unavailable);
 }

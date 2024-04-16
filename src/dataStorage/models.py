@@ -86,6 +86,7 @@ class Doctor(models.Model):
     # doctor_id = models.SlugField(max_length=40, unique=True, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, unique=True)
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    setting_json = models.JSONField(blank=True, null=True)
 
     class Meta:
         db_table = "doctors"
@@ -104,8 +105,6 @@ class Appointment(models.Model):
     patient = models.ForeignKey(
         Patient, related_name="patientLink", on_delete=models.DO_NOTHING
     )
-    from_date_time = models.DateTimeField(blank=True, null=True)
-    to_date_time = models.DateTimeField(blank=True, null=True)
     appointment_date = models.DateField(blank=False, null=False)
     from_time = models.TimeField(blank=False, null=False)
     to_time = models.TimeField(blank=False, null=False)
@@ -116,6 +115,7 @@ class Appointment(models.Model):
     class Meta:
         db_table = "appointments"
         managed = True
+        unique_together = ("doctor", "patient", "appointment_date", "from_time", "to_time")
 
     def __str__(self):
         return f"{self.doctor.user.username}:{self.patient.user.username}:{self.createTimestamp.strftime('%d-%b-%Y %I:%M %p')}:{self.status}"
