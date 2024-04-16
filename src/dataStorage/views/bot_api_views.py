@@ -85,6 +85,8 @@ def generate_token(request):
 # @csrf_exempt
 def bot_chat(request):
     if request.method == "POST" and request.is_ajax():
+        if request.user.is_authenticated and not request.user.is_staff:
+            request.session["patient_id"] = request.user.id
         return JsonResponse(
             {
                 "message": f"{request.POST.get('content')}",
