@@ -2,9 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
-from dataStorage.models import Patient, Appointment, Doctor
+from dataStorage.models import Patient, Appointment, Doctor, Schedule
 from datetime import datetime
-
+from django.utils import timezone
 
 @login_required
 def appointment_operation(request):
@@ -102,3 +102,36 @@ def appointment_operation(request):
             },
             status=200,
         )
+
+# python src\manage.py shell
+# from dataStorage.views import *
+# book_appointment('12-4-2024')
+# book_appointment('13-4-2024')
+# book_appointment('14-4-2024')
+# book_appointment('16-4-2024')
+# book_appointment('17-4-2024')
+# book_appointment('18-4-2024')
+def book_appointment(appointment_date, appointment_from_time=None, appointment_to_time=None):
+    appointment_dateObj = datetime.strptime(appointment_date, "%d-%m-%Y")
+    is_future_date = appointment_dateObj.date() >= timezone.now().date()
+    if not is_future_date:
+        return f"Appointment closed for {appointment_dateObj.strftime("%d-%B-%Y")}."
+    
+    appointment_weekday = appointment_dateObj.weekday() # 5 => Saturday, 6 => Sunday
+    if appointment_weekday == 6:
+        return f"{appointment_dateObj.strftime("%d-%B-%Y")} is Sunday, We are Closed on Sunday."
+    
+    scheduleObj = Schedule.objects.filter(
+        schedule_month_year__month = appointment_dateObj.month,
+        schedule_month_year__year = appointment_dateObj.year,
+    )
+    schedule_exists = scheduleObj.exists()
+    if not schedule_exists:
+        return f"Schedule not created for {appointment_dateObj.strftime("%B-%Y")}."
+    
+    if appointment_dateObj.strftime("%d-%m-%Y") in scheduleObj[0].schedule_json.get("rejected_days"):
+        return f"Sorry, We are closed on {appointment_dateObj.strftime("%d-%B-%Y")}."
+
+    print(f"{schedule_exists=}, {appointment_weekday=}, {is_future_date=}")
+    if appointment_from_time is None and appointment_to_time is None:
+        print("None")

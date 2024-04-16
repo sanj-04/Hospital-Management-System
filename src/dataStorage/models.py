@@ -172,7 +172,7 @@ class Token(models.Model):
 
 
 class Schedule(models.Model):
-    schedule_month_year = models.DateField(blank=True, null=True)
+    schedule_month_year = models.DateField(blank=False, null=False, unique=True)
     doctor = models.ForeignKey(
         Doctor, related_name="doctorScheduleLink", on_delete=models.DO_NOTHING
     )

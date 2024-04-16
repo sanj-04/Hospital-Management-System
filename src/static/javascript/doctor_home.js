@@ -297,4 +297,33 @@ function reloadElements(data) {
   });
   medicine_listEle.innerHTML = medicine_options;
   patients_listEle.innerHTML = patients_options;
+
+  $('.datepicker_single').datepicker({
+    // startDate: '{{start_date}}',
+    // endDate: '{{last_date}}',
+    format: 'dd-M-yyyy',
+    autoclose: true,
+    monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    daysOfWeekDisabled: [0,6],
+    weekStart: 1,
+    calendarWeeks: true,
+  });
+
+  $('.datepicker_multiple').datepicker({
+    startDate: new Date(),
+    // endDate: '{{last_date}}',
+    multidate: true,
+    // autoclose: true,
+    calendarWeeks: true,
+    format: "dd-M-yyyy",
+    daysOfWeekHighlighted: "0",
+    daysOfWeekDisabled: [0],
+    datesDisabled: ['16-04-2024'],
+    language: 'en',
+    weekStart: 1,
+  }).on('changeDate', function(e) {
+    $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
+    console.log(e.dates.length);
+  });
 }

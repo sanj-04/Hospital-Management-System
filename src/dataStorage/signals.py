@@ -27,3 +27,5 @@ from dataStorage.models import Patient, Doctor
 def postRegistrations(sender, instance, created, **kwargs):
     if created and instance.is_superuser:
         Doctor.objects.create(user=instance)
+    # if created and not instance.is_superuser:
+    #     Patient.objects.create(user=instance)

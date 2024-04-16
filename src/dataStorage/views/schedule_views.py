@@ -10,12 +10,21 @@ def schedule_operation(request):
     if request.method == "POST" and request.is_ajax():
         schedule_month = request.POST.get("schedule_month")
         schedule_monthObj = datetime.strptime(schedule_month, "%Y-%m")
+        schedule_exists = Schedule.objects.filter(schedule_month_year = schedule_monthObj).exists()
+        if schedule_exists:
+            return JsonResponse(
+                {
+                    "message": f"Duplicate Schedule {schedule_month} Exists.",
+                },
+                status=200,
+            )
         schedule_days = request.POST.get("schedule_days").split(",")
         schedule_days_list = [
             datetime.strptime(schedule_day, "%d-%b-%Y").strftime("%d-%m-%Y")
             for schedule_day in schedule_days
             if datetime.strptime(schedule_day, "%d-%b-%Y").month
-            == schedule_monthObj.month
+            == schedule_monthObj.month and datetime.strptime(schedule_day, "%d-%b-%Y").year
+            == schedule_monthObj.year
         ]
         schedule_status = request.POST.get("schedule_status")
         schedule_json = {
@@ -45,14 +54,16 @@ def schedule_operation(request):
                 datetime.strptime(schedule_day, "%d-%m-%Y").strftime("%d-%m-%Y")
                 for schedule_day in unavailable_count
                 if datetime.strptime(schedule_day, "%d-%m-%Y").month
-                == scheduleObj.schedule_month_year.month
+                == scheduleObj.schedule_month_year.month and datetime.strptime(schedule_day, "%d-%m-%Y").year
+                == scheduleObj.schedule_month_year.year
             ]
         except:
             schedule_days_list = [
                 datetime.strptime(schedule_day, "%d-%b-%Y").strftime("%d-%m-%Y")
                 for schedule_day in unavailable_count
                 if datetime.strptime(schedule_day, "%d-%b-%Y").month
-                == scheduleObj.schedule_month_year.month
+                == scheduleObj.schedule_month_year.month and datetime.strptime(schedule_day, "%d-%b-%Y").year
+                == scheduleObj.schedule_month_year.year
             ]
         schedule_json = {
             "rejected_days": schedule_days_list,
