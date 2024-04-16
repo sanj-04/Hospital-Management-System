@@ -87,6 +87,7 @@ def bot_chat(request):
     if request.method == "POST" and request.is_ajax():
         if request.user.is_authenticated and not request.user.is_staff:
             request.session["patient_id"] = request.user.id
+            request.session["patient_name"] = request.user.username
         return JsonResponse(
             {
                 "message": f"{request.POST.get('content')}",
