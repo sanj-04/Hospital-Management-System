@@ -34,6 +34,9 @@ def pres(request):
     return render(request, "pres.html", context)
 
 def bot(request):
+    if request.user.is_authenticated and not request.user.is_staff:
+        request.session["patient_id"] = request.user.id
+        request.session["patient_name"] = request.user.username
     context = {}
     return render(request, "bot_index.html", context)
 
