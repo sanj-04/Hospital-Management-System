@@ -10,24 +10,34 @@ from django.db.models import Q
 def create_time_objects(dateObj, fromObj, toObj, interval_minutes):
     from_time_objects = []
     to_time_objects = []
+    slots = {}
+    index = 0
     current_time = fromObj
     while current_time < toObj:
         from_time_objects.append(current_time)
+        from_time=current_time
         current_time = (
             datetime.combine(dateObj, current_time) + timedelta(minutes=interval_minutes)
         ).time()
         to_time_objects.append(current_time)
-    to_time_objects.append(current_time)
-    return from_time_objects, to_time_objects
+        to_time=current_time
+        slots[index]={
+            "from_time": from_time,
+            "to_time": to_time,
+        }
+        index+=1
+    # print(f"{from_time_objects=}, {to_time_objects=}")
+    # print(f"{len(from_time_objects)=}, {len(to_time_objects)=}")
+    return from_time_objects, to_time_objects, slots
 
 # python src\manage.py shell
 # from dataStorage.views import book_appointment
+# book_appointment(1, 1, '18-4-2024')
 # book_appointment(1, '12-4-2024')
 # book_appointment(1, '13-4-2024')
 # book_appointment(1, '14-4-2024')
 # book_appointment(1, '16-4-2024')
 # book_appointment(1, '17-4-2024')
-# book_appointment(1, '18-4-2024')
 # book_appointment(1, '18-4-2024', '05:00 PM', '05:30 PM')
 # book_appointment(1, '19-4-2024', '05:00 PM', '05:30 PM')
 # book_appointment(1, '20-4-2024', '05:00 PM', '05:30 PM')
@@ -90,7 +100,7 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
     available_toObj = datetime.strptime(available_to, "%I:%M %p").time()
     available_slot_count = available_settings[appointment_weekday]['slot_count']
     available_duration = available_settings[appointment_weekday]['duration']
-    available_fromObj_list, available_toObj_list = create_time_objects(
+    available_fromObj_list, available_toObj_list, slotObjs = create_time_objects(
         appointment_dateObj,
         available_fromObj,
         available_toObj,
@@ -111,20 +121,27 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
             if appointmentObj.from_time in available_fromObj_list:
                 index = available_fromObj_list.index(appointmentObj.from_time)
                 available_toObj_list.pop(index)
+                del slotObjs[index]
             if appointmentObj.to_time in available_toObj_list:
                 index = available_toObj_list.index(appointmentObj.to_time)
                 available_fromObj_list.pop(index)
+                del slotObjs[index]
         
-        available_from_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_fromObj_list]
-        available_to_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_toObj_list]
+        # available_from_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_fromObj_list]
+        # available_to_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_toObj_list]
+        available_slots = [{
+            "from_time": slotObj.get("from_time").strftime("%I:%M %p"),
+            "to_time": slotObj.get("to_time").strftime("%I:%M %p"),
+        } for slotObj in slotObjs.values()]
 
         if appointment_from_time is None or appointment_to_time is None:
             return {
                 "message": f"Available Slot(s) on {appointment_dateObj.strftime("%d-%B-%Y")}.",
                 "created": False,
                 "available": True,
-                "available_from_slots": available_from_slots,
-                "available_to_slots": available_to_slots,
+                # "available_from_slots": available_from_slots,
+                # "available_to_slots": available_to_slots,
+                "available_slots": available_slots,
             }
         
         appointment_fromObj = datetime.strptime(appointment_from_time, "%I:%M %p").time()
@@ -151,6 +168,7 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
                         # "available": True,
                         # "available_from_slots": available_from_slots,
                         # "available_to_slots": available_to_slots,
+                        # "available_slots": available_slots,
                     }
                 except Exception as err:
                     print(f"{err=}")
@@ -160,8 +178,9 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
             "message": f"Failed to create Appointment on {appointment_dateObj.strftime("%d-%B-%Y")} at {appointment_from_time} and {appointment_to_time}",
             "created": False,
             "available": True,
-            "available_from_slots": available_from_slots,
-            "available_to_slots": available_to_slots,
+            # "available_from_slots": available_from_slots,
+            # "available_to_slots": available_to_slots,
+            "available_slots": available_slots,
         }
 
 @login_required
@@ -224,8 +243,9 @@ def appointment_operation(request):
             doctor_info=request.user.id,
             appointment_date=appointment_dateObj.strftime("%d-%m-%Y"),
             appointment_from_time=appointment_from_timeObj.strftime("%I:%M %p"),
-            appointment_to_time=appointment_to_timeObj.strftime("%I:%M %p")
+            appointment_to_time=appointment_to_timeObj.strftime("%I:%M %p"),
         )
+        print(f"{response=}")
         if response.get("created"):
             appointment_id = response.get("appointment_id")
             appointmentObj = response.get("appointmentObj")

@@ -4,7 +4,7 @@ mappings = {
       "Provide your Name or ID.",
     ],
     "options": {},
-    "next_action": "init",
+    "next_action": "home",
   },
 
   "login_falied": {
@@ -13,10 +13,10 @@ mappings = {
       "Provide your Name or ID.",
     ],
     "options": {},
-    "next_action": "init",
+    "next_action": "home",
   },
 
-  "init": {
+  "home": {
     "title": [
       "Hello {patient_name},",
       "How can I help you?",
@@ -72,6 +72,7 @@ mappings = {
       "Select one from Avaliable slot(s).",
     ],
     "options": {},
+    "next_action": "book_appointment_with_slot",
   },
 
   "book_appointment_unaviable": {
@@ -86,7 +87,7 @@ mappings = {
       "Appointment Booked.",
     ],
     "options": {
-      "init": "Go to Home.",
+      "home": "Go to Home.",
     },
   },
 }

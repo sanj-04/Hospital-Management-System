@@ -52,7 +52,7 @@ credentials = {
             },
             "Saturday" : {
                 "from": "12:00 PM",
-                "to": "01:00 PM",
+                "to": "01:15 PM",
                 "duration": 15,
                 "slot_count": 5,
             },

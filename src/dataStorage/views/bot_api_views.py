@@ -7,10 +7,12 @@ import pyotp
 from base64 import b32encode
 from binascii import unhexlify
 
-def get_token(hex_key):
+def get_token(hex_key, hop=None):
     secret = b32encode((unhexlify(hex_key))).decode("UTF-8")
-    totp = pyotp.TOTP(secret)
-    return totp.now()
+    # totp = pyotp.TOTP(secret)
+    # return totp.now()
+    hotp = pyotp.HOTP(secret)
+    return hotp.at(hop)
 
 # @login_required
 @csrf_exempt
@@ -152,10 +154,10 @@ def login_falied(request):
 def login_success(request, patientObj):
     request.session["patient_id"] = patientObj.id
     request.session["patient_name"] = patientObj.user.username
-    response = mappings.get("init").get("title")
+    response = mappings.get("home").get("title")
     response[0] = response[0].format(patient_name=request.session.get("patient_name"))
-    options = list(mappings.get("init").get("options").values())
-    request.session["next_action"] = mappings.get("init").get("next_action", None)
+    options = list(mappings.get("home").get("options").values())
+    request.session["next_action"] = mappings.get("home").get("next_action", None)
     return options, response
 
 def bot_chat(request):
@@ -172,7 +174,7 @@ def bot_chat(request):
             response = mappings.get("login").get("title")
             request.session["next_action"] = mappings.get("login").get("next_action")
         
-        elif request_next_option == "init":
+        elif request_next_option == "home":
             try:
                 patientObj = Patient.objects.get(id = int(request_content))
                 options, response = login_success(request, patientObj)
@@ -200,14 +202,14 @@ def bot_chat(request):
             response_message = response_data.get("message")
             response_created = response_data.get("created")
             response_available = response_data.get("available")
-            from_slots_list = response_data.get("available_from_slots")
-            to_slots_list = response_data.get("available_to_slots")
+            available_slots = response_data.get("available_slots")
+
             options = []
-            for from_slot, to_slot in zip(from_slots_list, to_slots_list):
+            for available_slot in available_slots:
                 options.append({
-                    "text": f"{from_slot} to {to_slot}",
+                    "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
                     "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                    "option_id": f"{from_slot.replace(" ", "_")}-{to_slot.replace(" ", "_")}",
+                    "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
                 })
             response = [response_message, *mappings.get("book_appointment_slots").get("title")]
             request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
@@ -225,7 +227,21 @@ def bot_chat(request):
                 appointment_to_time=to_slot,
             )
             response_message = response_data.get("message")
-            response = [response_message]
+            if response_data.get("created"):
+                response = [response_message, *mappings.get("book_appointment_complete").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
+                options = list(mappings.get("home").get("options").values())
+            else:
+                response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
+                available_slots = response_data.get("available_slots")
+                options = []
+                for available_slot in available_slots:
+                    options.append({
+                        "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                    })
 
         return JsonResponse(
             {
