@@ -90,7 +90,12 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
     available_toObj = datetime.strptime(available_to, "%I:%M %p").time()
     available_slot_count = available_settings[appointment_weekday]['slot_count']
     available_duration = available_settings[appointment_weekday]['duration']
-    available_fromObj_list, available_toObj_list = create_time_objects(appointment_dateObj, available_fromObj, available_toObj, available_duration)
+    available_fromObj_list, available_toObj_list = create_time_objects(
+        appointment_dateObj,
+        available_fromObj,
+        available_toObj,
+        available_duration
+    )
     appointmentObjs = Appointment.objects.filter(
         appointment_date = appointment_dateObj.date(),
     )
