@@ -93,50 +93,145 @@ request_mapping = {
 }
 
 # @csrf_exempt
+# def bot_chat(request):
+#     if request.method == "POST" and request.is_ajax():
+#         response = None
+#         request_content = request.POST.get('content')
+#         # request.session["patient_id"] = request.user.id
+#         # request.session["patient_name"] = request.user.username
+
+#         if request_content in ["Book Appointment"]:
+#             if request.session.get("patient_id") and request.session.get("patient_name"):
+#                 request.session["request"] = "get_appointment_date"
+#                 response = "Provide Appointment Date in DD-MM-YYYY format."
+#             else:
+#                 request.session["request"] = "get_patient_id"
+#                 response = "Provide Patient ID or Name."
+        
+#         elif type(request_content) in [type(1), type("a")] and request.session.get("request") == "get_patient_id":
+#             try:
+#                 patientObj = Patient.objects.get(id = int(request_content))
+#                 request.session["patient_id"] = patientObj.id
+#                 request.session["patient_name"] = patientObj.user.username
+#             except ValueError as ve:
+#                 patientObj = Patient.objects.get(user__username = request_content)
+#                 request.session["patient_id"] = patientObj.id
+#                 request.session["patient_name"] = patientObj.user.username
+#             except Exception as err:
+#                 request.session["request"] = "get_patient_id"
+#                 response = "Please Provide Patient ID or Name."
+        
+#         elif type(request_content) is type("a") and request.session.get("request") == "get_appointment_date":
+#             from dataStorage.views import book_appointment
+#             responseDict = book_appointment(
+#                 patient_info=request.session.get("patient_id"),
+#                 doctor_info=None,
+#                 appointment_date=request_content,
+#                 appointment_from_time=None,
+#                 appointment_to_time=None
+#             )
+#             response = responseDict.get("message")
+
+
+#         return JsonResponse(
+#             {
+#                 "message": f"{request.POST.get('content')}",
+#                 "response": response if response else "hello",
+#             },
+#             status=200,
+#         )
+from .intents import mappings
+
+def login_falied(request):
+    request.session["patient_id"] = None
+    request.session["patient_name"] = None
+    response = mappings.get("login_falied").get("title")
+    request.session["next_action"] = mappings.get("login_falied").get("next_action")
+    return response
+
+def login_success(request, patientObj):
+    request.session["patient_id"] = patientObj.id
+    request.session["patient_name"] = patientObj.user.username
+    response = mappings.get("init").get("title")
+    response[0] = response[0].format(patient_name=request.session.get("patient_name"))
+    options = list(mappings.get("init").get("options").values())
+    request.session["next_action"] = mappings.get("init").get("next_action", None)
+    return options, response
+
 def bot_chat(request):
     if request.method == "POST" and request.is_ajax():
         response = None
-        request_content = request.POST.get('content')
-        # request.session["patient_id"] = request.user.id
-        # request.session["patient_name"] = request.user.username
+        options = None
+        request_selected_option = request.POST.get("option_id")
+        request_next_option = request.session.get("next_action")
+        request_content = request.POST.get("content")
 
-        if request_content in ["Book Appointment"]:
-            if request.session.get("patient_id") and request.session.get("patient_name"):
-                request.session["request"] = "get_appointment_date"
-                response = "Please Provide Appointment Date in DD-MM-YYYY format."
-            else:
-                request.session["request"] = "get_patient_id"
-                response = "Please Provide Patient ID or Name."
+        if request_content.lower() == "login" or request_next_option == "login":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            response = mappings.get("login").get("title")
+            request.session["next_action"] = mappings.get("login").get("next_action")
         
-        elif type(request_content) in [type(1), type("a")] and request.session.get("request") == "get_patient_id":
+        elif request_next_option == "init":
             try:
                 patientObj = Patient.objects.get(id = int(request_content))
-                request.session["patient_id"] = patientObj.id
-                request.session["patient_name"] = patientObj.user.username
+                options, response = login_success(request, patientObj)
+            except Patient.DoesNotExist as err:
+                response = login_falied(request)
             except ValueError as ve:
-                patientObj = Patient.objects.get(user__username = request_content)
-                request.session["patient_id"] = patientObj.id
-                request.session["patient_name"] = patientObj.user.username
-            except Exception as err:
-                request.session["request"] = "get_patient_id"
-                response = "Please Provide Patient ID or Name."
-        
-        elif type(request_content) is type("a") and request.session.get("request") == "get_appointment_date":
+                try:
+                    patientObj = Patient.objects.get(user__username = request_content)
+                    options, response = login_success(request, patientObj)
+                except Patient.DoesNotExist as err:
+                    response = login_falied(request)
+
+        elif request_content.lower() == "book appointment" or request_selected_option == "book_appointment":
+            response = mappings.get(request_selected_option).get("title")
+            request.session["next_action"] = mappings.get(request_selected_option).get("next_action")
+
+        elif request_next_option == "book_appointment_slots":
             from dataStorage.views import book_appointment
-            responseDict = book_appointment(
+            response_data = book_appointment(
                 patient_info=request.session.get("patient_id"),
                 doctor_info=None,
                 appointment_date=request_content,
-                appointment_from_time=None,
-                appointment_to_time=None
             )
-            response = responseDict.get("message")
-
+            print(f"{response_data=}")
+            response_message = response_data.get("message")
+            response_created = response_data.get("created")
+            response_available = response_data.get("available")
+            from_slots_list = response_data.get("available_from_slots")
+            to_slots_list = response_data.get("available_to_slots")
+            options = []
+            for from_slot, to_slot in zip(from_slots_list, to_slots_list):
+                options.append({
+                    "text": f"{from_slot} to {to_slot}",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": f"{from_slot.replace(" ", "_")}-{to_slot.replace(" ", "_")}",
+                })
+            response = [response_message, *mappings.get("book_appointment_slots").get("title")]
+            request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
+        
+        elif request_next_option == "book_appointment_with_slot":
+            print(f"{request_next_option=}")
+            print(f"{request_content=}, {request_selected_option=}")
+            from_slot, to_slot = request_selected_option.replace("_", " ").split("-") #12:15_PM-12:30_PM
+            from dataStorage.views import book_appointment
+            response_data = book_appointment(
+                patient_info=request.session.get("patient_id"),
+                doctor_info=None,
+                appointment_date=request_content,
+                appointment_from_time=from_slot,
+                appointment_to_time=to_slot,
+            )
+            response_message = response_data.get("message")
+            response = [response_message]
 
         return JsonResponse(
             {
                 "message": f"{request.POST.get('content')}",
-                "response": response if response else "hello",
+                "response": response if response else ["hello"],
+                "options": options if options else [],
             },
             status=200,
         )

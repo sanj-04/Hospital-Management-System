@@ -18,6 +18,42 @@ const createChatLi = (message, className) => {
     return chatLi; // return chat <li> element
 }
 
+const createChatBtn = (btn_text, className, btn_id) => {
+    let chatBtn = document.createElement("button");
+    chatBtn.setAttribute("type", "button");
+    chatBtn.setAttribute("class", className);
+    chatBtn.setAttribute("id", btn_id);
+    chatBtn.innerText = btn_text;
+    return chatBtn; // return chat <button> element
+}
+
+function handleOpt(){
+    console.log(this);
+    let outgoingChatLi = createChatLi(this.innerText, "outgoing");
+    chatbox.appendChild(outgoingChatLi);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+    setTimeout(() => {
+        // Display "Thinking..." message while waiting for the response
+        const incomingChatLi = createChatLi("Thinking...", "incoming");
+        chatbox.appendChild(incomingChatLi);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+        generateResponse(incomingChatLi, option_id=this.id);
+    }, 600);
+
+    document.querySelectorAll(".chat_option").forEach(el=>{
+        el.remove();
+    });
+    // var elm= document.createElement("p");
+    // elm.setAttribute("class","test");
+    // var sp= '<span class="rep">'+this.innerText+'</span>';
+    // elm.innerHTML= sp;
+    // cbot.appendChild(elm);
+
+    // console.log(findText.toLowerCase());
+    // var tempObj= data[findText.toLowerCase()];
+    // handleResults(tempObj.title,tempObj.options,tempObj.url);
+}
+
 // const generateResponse = (chatElement) => {
 //     const API_URL = window.ApiUrl; //"https://api.openai.com/v1/chat/completions";
 //     const messageElement = chatElement.querySelector("p");
@@ -45,7 +81,7 @@ const createChatLi = (message, className) => {
 //     }).finally(() => chatbox.scrollTo(0, chatbox.scrollHeight));
 // }
 
-const generateResponse = (chatElement) => {
+const generateResponse = (chatElement, option_id=null) => {
     const messageElement = chatElement.querySelector("p");
     $.ajax({
         url : window.ApiUrl,
@@ -54,13 +90,40 @@ const generateResponse = (chatElement) => {
             'csrfmiddlewaretoken': window.CsrfToken,
             'role': "user",
             'content': userMessage,
+            'option_id': option_id,
         },
         beforeSend: function (xhr) {
             xhr.setRequestHeader("X-CSRFToken", window.CsrfToken);
         },
         success : function(data,textMsg, xhr) {
-            console.log(data);
-            messageElement.textContent = data.response.trim();
+            console.log(data, data.response.length);
+            if (data.response.length > 1) {
+                data.response.forEach((element, index) => {
+                    if (index == 0) {
+                        messageElement.textContent = element;
+                    } else {
+                        let incomingChatLi = createChatLi(element, "incoming");
+                        chatbox.appendChild(incomingChatLi);
+                        chatbox.scrollTo(0, chatbox.scrollHeight);
+                    }
+                });
+            } else {
+                messageElement.textContent = data.response;
+            }
+
+            console.log(data.options, data.options.length);
+            if (data.options.length != 0) {
+                data.options.forEach((element, index) => {
+                    let incomingChatBtn = createChatBtn(
+                        element.text,
+                        element.class_list,
+                        element.option_id
+                    );
+                    chatbox.appendChild(incomingChatBtn);
+                    chatbox.scrollTo(0, chatbox.scrollHeight);
+                    incomingChatBtn.addEventListener("click", handleOpt);
+                });
+            }
         },
         error : function(xhr, errmsg, err) {
             messageElement.classList.add("error");

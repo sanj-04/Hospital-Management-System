@@ -35,24 +35,24 @@ class AjaxMiddleware:
         return response
 
 
-class AccountMiddleware(MiddlewareMixin):
-    def process_request(self, request):
-        if request.user.is_authenticated:
-            try:
-                Doctor.objects.get(user_id=request.user.id)
-                is_doctor = True
-            except Doctor.DoesNotExist:
-                is_doctor = False
+# class AccountMiddleware(MiddlewareMixin):
+#     def process_request(self, request):        
+        # if request.user.is_authenticated:
+        #     try:
+        #         Doctor.objects.get(user_id=request.user.id)
+        #         is_doctor = True
+        #     except Doctor.DoesNotExist:
+        #         is_doctor = False
 
-            try:
-                Patient.objects.get(user_id=request.user.id)
-                is_patient = True
-            except Patient.DoesNotExist:
-                is_patient = False
+        #     try:
+        #         Patient.objects.get(user_id=request.user.id)
+        #         is_patient = True
+        #     except Patient.DoesNotExist:
+        #         is_patient = False
 
-            fullUrl = request.get_full_path().split("?")[0]
-            if is_doctor and "/doctor_home" not in fullUrl:
-                return redirect("dataStorage:doctor_home")
+        #     fullUrl = request.get_full_path().split("?")[0]
+        #     if request.user.doctor and "/doctor_home" not in fullUrl:
+        #         return redirect("dataStorage:doctor_home")
 
-            if is_patient and "/bot" not in fullUrl:
-                return redirect("dataStorage:bot")
+        #     if request.user.patient and "/bot" not in fullUrl:
+        #         return redirect("dataStorage:bot")

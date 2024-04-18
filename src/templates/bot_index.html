@@ -26,10 +26,10 @@
       <p>Hi there {% if request.user.is_authenticated or not request.user.is_staff %}{{request.user.username}}{% endif %}👋<br>How can I help you today?</p>
     </li>
     {% if not request.user.is_authenticated or request.user.is_staff %}
-    <li class="chat incoming">
+    <!-- <li class="chat incoming">
       <span class="material-symbols-outlined">smart_toy</span>
       <p>Please Provide Patient ID or Name.</p>
-    </li>
+    </li> -->
     {% endif %}
   </ul>
   <div class="chat-input">

@@ -37,6 +37,7 @@ def bot(request):
     if request.user.is_authenticated and not request.user.is_staff:
         request.session["patient_id"] = request.user.id
         request.session["patient_name"] = request.user.username
+        # request.session["next_action"] = "login"
     context = {}
     return render(request, "bot_index.html", context)
 

@@ -190,10 +190,10 @@ function datepicker_operation(datepicker_operation) {
     calendarWeeks: true,
   });
 
-  $('.datepicker_single').on('show', function(e) {
-    // $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
-    console.log('Calendar showing.', e);
-  });
+  // $('.datepicker_single').on('show', function(e) {
+  //   // $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
+  //   console.log('Calendar showing.', e);
+  // });
 
   $('.datepicker_multiple').datepicker({
     // startDate: new Date(),
@@ -209,10 +209,10 @@ function datepicker_operation(datepicker_operation) {
     weekStart: 0,
   });
 
-  $('.datepicker_multiple').on('changeDate', function(e) {
-    $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
-    console.log(e.dates.length);
-  });
+  // $('.datepicker_multiple').on('changeDate', function(e) {
+  //   $(this).find('.input-group-addon .count').text(' ' + e.dates.length);
+  //   console.log(e.dates.length);
+  // });
 }
 
 function reloadElements(data) {
@@ -253,7 +253,7 @@ function reloadElements(data) {
 
     let newCellEle3 = newRowEle.insertCell();
     newCellEle3.innerHTML = `<span name="span_appointment_date_update">`+appointment.appointment_date+`</span>
-    <input type="text" name="id_appointment_date_update" class="datepicker_single form-control"
+    <input type="text" name="id_appointment_date_update" class="datepicker_single datepicker form-control"
     hidden value="`+appointment.appointment_date+`"></input>`;
 
     let newCellEle4 = newRowEle.insertCell();

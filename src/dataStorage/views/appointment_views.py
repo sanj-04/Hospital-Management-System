@@ -5,6 +5,7 @@ from django.shortcuts import render
 from dataStorage.models import Patient, Appointment, Doctor, Schedule
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.db.models import Q
 
 def create_time_objects(dateObj, fromObj, toObj, interval_minutes):
     from_time_objects = []
@@ -65,8 +66,8 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
         }
     
     scheduleObj = Schedule.objects.filter(
-        schedule_month_year__month = appointment_dateObj.month,
-        schedule_month_year__year = appointment_dateObj.year,
+        Q(schedule_month_year__month = appointment_dateObj.month)
+        &Q(schedule_month_year__year = appointment_dateObj.year)
     )
     schedule_exists = scheduleObj.exists()
     if not schedule_exists:
