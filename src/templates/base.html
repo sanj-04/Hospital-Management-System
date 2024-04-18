@@ -2,13 +2,16 @@
 <html>
 	<head>{% load static %}
 		{% block stylesheet %}{% endblock stylesheet %}
-		<link rel="stylesheet" href="{% static 'css/navbar-static-top.css' %}">
-		<link rel="stylesheet" href="{% static 'css/navbar-top.css' %}">
-		<link rel="stylesheet" href='{% static "css/bootstrap.css" %}' type="text/css"/>
-		<link rel="stylesheet" href='{% static "css/bootstrap-icons.css" %}' type="text/css"/>
-		<link rel="stylesheet" href='{% static "css/all.css" %}' type="text/css"/>
-		<link rel="stylesheet" href='{% static "css/animate.css" %}' type="text/css"/>
-		<link rel="stylesheet" href='{% static "css/bootstrap-datepicker.css" %}' type="text/css">
+		<link rel="stylesheet" href="{% static 'css/navbar-static-top.css' %}" type="text/css"/>
+		<link rel="stylesheet" href="{% static 'css/navbar-top.css' %}" type="text/css"/>
+		<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css"/>
+		<link rel="stylesheet" href="{% static 'css/bootstrap-icons.css' %}" type="text/css"/>
+		<link rel="stylesheet" href="{% static 'css/all.css' %}" type="text/css"/>
+		<link rel="stylesheet" href="{% static 'css/animate.css' %}" type="text/css"/>
+		<link rel="stylesheet" href="{% static 'css/bootstrap-datepicker.css' %}" type="text/css">
+		<link rel="stylesheet" href="{% static 'css/bot_style.css' %}" type="text/css">
+		<link rel="stylesheet" href="{% static 'css/material-symbols-outlined.css' %}" type="text/css">
+		<link rel="stylesheet" href="{% static 'css/material-symbols-rounded.css' %}" type="text/css">
 		<link rel="shortcut icon" href="{% static 'images/favicon.ico' type='image/x-icon' %}">
 		<style type="text/css">
 			.bd-placeholder-img {
@@ -43,6 +46,7 @@
     	<script type="text/javascript" src="{% static 'javascript/bootstrap.js' %}"></script>
     	<script type="text/javascript" src="{% static 'javascript/bootstrap-notify.js' %}"></script>
 		<script type="text/javascript" src="{% static 'javascript/bootstrap-datepicker.js' %}"></script>
+		<script src="{% static 'javascript/bot_script.js' %}" defer></script>
 		{% block javascript %}{% endblock javascript %}
 		{% if messages %}
 		<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
