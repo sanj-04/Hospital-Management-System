@@ -15,7 +15,20 @@ from dataStorage.models import (
 
 admin.site.register(Patient)
 admin.site.register(Doctor)
-admin.site.register(Appointment)
+
+class AppointmentAdmin(admin.ModelAdmin):
+	list_display = ["__str__", "doctor", "patient", "appointment_date", "from_time", "to_time", "status"]
+	list_display_links = ["__str__"]
+	# list_editable = ["price"]
+	list_filter = ["doctor","patient", "appointment_date"]
+	search_fields = ["doctor","patient", "appointment_date"]
+	date_hierarchy = "appointment_date"
+	raw_id_fields = ["doctor", "patient"]
+
+	class Meta:
+		model = Appointment
+admin.site.register(Appointment, AppointmentAdmin)
+
 admin.site.register(Medicine)
 admin.site.register(Prescription)
 admin.site.register(Token)

@@ -43,6 +43,7 @@ def create_time_objects(dateObj, fromObj, toObj, interval_minutes):
 # book_appointment(1, '20-4-2024', '05:00 PM', '05:30 PM')
 
 def book_appointment(patient_info, doctor_info, appointment_date, appointment_from_time=None, appointment_to_time=None):
+    print(f"{patient_info=}, {doctor_info=}, {appointment_date=}, {appointment_from_time=}, {appointment_to_time=}")
     try:
         patientObj = Patient.objects.get(id = int(patient_info))
     except ValueError as ve:
@@ -100,6 +101,7 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
     available_toObj = datetime.strptime(available_to, "%I:%M %p").time()
     available_slot_count = available_settings[appointment_weekday]['slot_count']
     available_duration = available_settings[appointment_weekday]['duration']
+    print(f"{available_from=}, {available_to=}, {available_slot_count=}, {available_duration=}")
     available_fromObj_list, available_toObj_list, slotObjs = create_time_objects(
         appointment_dateObj,
         available_fromObj,
@@ -146,10 +148,13 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
         
         appointment_fromObj = datetime.strptime(appointment_from_time, "%I:%M %p").time()
         appointment_toObj = datetime.strptime(appointment_to_time, "%I:%M %p").time()
+        print(f"{appointment_fromObj in available_fromObj_list=}, {appointment_toObj in available_toObj_list=}")
         if appointment_fromObj in available_fromObj_list and appointment_toObj in available_toObj_list:
-            fron_index = available_fromObj_list.index(appointment_fromObj)
+            from_index = available_fromObj_list.index(appointment_fromObj)
             to_index = available_toObj_list.index(appointment_toObj)
-            if fron_index and to_index and fron_index == to_index:
+            print(f"{from_index=}, {to_index=}, {from_index == to_index}")
+            print(f"{doctorObj=}, {patientObj=}, {appointment_dateObj=}, {appointment_fromObj=}, {appointment_toObj=}")
+            if from_index and to_index and from_index == to_index:
                 try:
                     appointmentObj = Appointment.objects.create(
                         doctor = doctorObj,

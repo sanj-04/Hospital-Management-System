@@ -78,7 +78,7 @@ class Patient(models.Model):
         managed = True
 
     def __str__(self):
-        return str(f"{self.user.username}:{self.age}")
+        return f"{self.user.username}"
 
 
 class Doctor(models.Model):
@@ -93,7 +93,7 @@ class Doctor(models.Model):
         managed = True
 
     def __str__(self):
-        return str(f"{self.user.username}")
+        return f"{self.user.username}"
 
 
 class Appointment(models.Model):
@@ -132,7 +132,7 @@ class Medicine(models.Model):
         managed = True
 
     def __str__(self):
-        return str(self.medicine_name)
+        return f"{self.medicine_name}"
 
 
 class Prescription(models.Model):

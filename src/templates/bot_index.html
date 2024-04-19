@@ -33,6 +33,15 @@
     window.ApiKey = '';
     window.CsrfToken = '{{ csrf_token }}';
     window.ApiUrl = "{% url 'dataStorage:bot_chat' %}";
+
+    let incomingChatBtn = createChatBtn(
+      "Login",
+      "chat_option btn btn-sm btn-outline-info m-2 float-end",
+      "login",
+    );
+    chatbox.appendChild(incomingChatBtn);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+    incomingChatBtn.addEventListener("click", handleOpt);
   });
 </script>
 {% endblock content %}
