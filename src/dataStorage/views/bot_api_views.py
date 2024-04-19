@@ -168,7 +168,7 @@ def bot_chat(request):
         request_next_option = request.session.get("next_action")
         request_content = request.POST.get("content")
 
-        if request_content.lower() == "login" or request_next_option == "login":
+        if request_selected_option == "login" or request_content.lower() == "login" or request_next_option == "login":
             request.session["patient_id"] = None
             request.session["patient_name"] = None
             response = mappings.get("login").get("title")
