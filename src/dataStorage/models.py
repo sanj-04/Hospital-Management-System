@@ -152,8 +152,7 @@ class Prescription(models.Model):
         managed = True
 
     def __str__(self):
-        return str(self.prescription_name)
-
+        return f"{self.prescription_hash}:{self.doctor.user.username}:{self.patient.user.username}"
 
 class Token(models.Model):
     patient = models.ForeignKey(

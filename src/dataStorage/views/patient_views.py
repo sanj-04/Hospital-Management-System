@@ -77,10 +77,15 @@ def patient_operation(request):
 
         doctorObj = Doctor.objects.get(user_id=request.user.id)
         patientObj = Patient.objects.get(id=int(patient_id))
-        prescription_json = json.loads(prescription)
+        prescription_dict = {}
+        prescription_dict["medicines"] = json.loads(prescription)
+        prescription_dict["doctor_name"] = doctorObj.user.username
+        prescription_dict["patient_name"] = patientObj.user.username
+        prescription_dict["date_time"] = datetime.now().strftime("%d-%b-%Y %I:%M %p")
+        
         prescriptionObj = Prescription.objects.create(
-            prescription_hash=hash_dict_content(prescription_json),
-            prescription_json=prescription_json,
+            prescription_hash=hash_dict_content(prescription_dict),
+            prescription_json=prescription_dict,
             doctor=doctorObj,
             patient=patientObj,
         )
