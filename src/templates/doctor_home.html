@@ -403,23 +403,19 @@
       datepicker_operation({{unavailable|safe}});
 
       document.getElementById('addBtn').addEventListener('click', event => {
-        form = `<div class="input-group input-group-sm mb-3">
-          <input type="text" name="medicine_name" class="form-control form-control-sm my-2" placeholder="Medicine Name" style="width: 130px;" list="id_medicine_list" autocomplete="off">
-          <input type="number" name="before_breakfast" class="form-control form-control-sm my-2" placeholder="Before Breakfast" min="0" oninput="validity.valid||(value='');">
-          <input type="number" name="after_breakfast" class="form-control form-control-sm my-2" placeholder="After Breakfast" min="0" oninput="validity.valid||(value='');">
-          <input type="number" name="before_lunch" class="form-control form-control-sm my-2" placeholder="Before Lunch" min="0" oninput="validity.valid||(value='');">
-          <input type="number" name="after_lunch" class="form-control form-control-sm my-2" placeholder="After Lunch" min="0" oninput="validity.valid||(value='');">
-          <input type="number" name="before_dinner" class="form-control form-control-sm my-2" placeholder="Before Dinner" min="0" oninput="validity.valid||(value='');">
-          <input type="number" name="after_dinner" class="form-control form-control-sm my-2" placeholder="After Dinner" min="0" oninput="validity.valid||(value='');">
-          <span class="input-group-text">
-          <button type="button" class="btn-close small-close-btn my-2" name="remove_medicine"></button>
-          </span>
-          <p class="invalid-feedback"><strong>This field required valid value</strong></p>
-          </div>`
+        form = `<div class="input-group input-group-sm lex-nowrap mb-3">
+          <input type="text" name="medicine_name" class="form-control" placeholder="Medicine Name" style="width: 130px;" list="id_medicine_list" autocomplete="off">
+          <input type="number" name="before_breakfast" class="form-control" placeholder="Before Breakfast" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="after_breakfast" class="form-control" placeholder="After Breakfast" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="before_lunch" class="form-control" placeholder="Before Lunch" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="after_lunch" class="form-control" placeholder="After Lunch" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="before_dinner" class="form-control" placeholder="Before Dinner" min="0" oninput="validity.valid||(value='');">
+          <input type="number" name="after_dinner" class="form-control" placeholder="After Dinner" min="0" oninput="validity.valid||(value='');">
+          <button class="btn btn-outline-secondary" type="button" name="remove_medicine">&#x2715;</button></div>`;
         document.getElementById('PrescriptionModalBody').insertAdjacentHTML('beforeend', form);
         identityRemoveBtn = document.querySelectorAll('button[name="remove_medicine"]');
         identityRemoveBtn.forEach(el => el.addEventListener('click', event => {
-          event.target.parentNode.parentNode.remove();
+          event.target.parentNode.remove();
         }));
       });
 
