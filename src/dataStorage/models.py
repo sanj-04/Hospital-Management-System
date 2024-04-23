@@ -108,6 +108,7 @@ class Appointment(models.Model):
     appointment_date = models.DateField(blank=False, null=False)
     from_time = models.TimeField(blank=False, null=False)
     to_time = models.TimeField(blank=False, null=False)
+    slot_index = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=9, choices=status_choices, default="Pending")
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updateTimestamp = models.DateTimeField(auto_now=True, blank=True, null=True)

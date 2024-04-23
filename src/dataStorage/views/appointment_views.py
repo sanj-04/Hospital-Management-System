@@ -11,6 +11,7 @@ def create_time_objects(dateObj, fromObj, toObj, interval_minutes):
     from_time_objects = []
     to_time_objects = []
     slots = {}
+    slots_index = {}
     index = 0
     current_time = fromObj
     while current_time < toObj:
@@ -24,11 +25,17 @@ def create_time_objects(dateObj, fromObj, toObj, interval_minutes):
         slots[index]={
             "from_time": from_time,
             "to_time": to_time,
+            "slot_index": index,
+        }
+        slots_index[from_time]={
+            "from_time": from_time,
+            "to_time": to_time,
+            "slot_index": index,
         }
         index+=1
     # print(f"{from_time_objects=}, {to_time_objects=}")
     # print(f"{len(from_time_objects)=}, {len(to_time_objects)=}")
-    return from_time_objects, to_time_objects, slots
+    return from_time_objects, to_time_objects, slots, slots_index
 
 # python src\manage.py shell
 # from dataStorage.views import book_appointment
@@ -102,12 +109,13 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
     available_slot_count = available_settings[appointment_weekday]['slot_count']
     available_duration = available_settings[appointment_weekday]['duration']
     print(f"{available_from=}, {available_to=}, {available_slot_count=}, {available_duration=}")
-    available_fromObj_list, available_toObj_list, slotObjs = create_time_objects(
+    available_fromObj_list, available_toObj_list, slotObjs, slots_index = create_time_objects(
         appointment_dateObj,
         available_fromObj,
         available_toObj,
         available_duration
     )
+    print(f"{available_fromObj_list=}, {available_toObj_list=}, {slotObjs=}")
     appointmentObjs = Appointment.objects.filter(
         appointment_date = appointment_dateObj.date(),
     )
@@ -119,23 +127,33 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
             "available": False,
         }
     else:
+        # for appointmentObj in appointmentObjs:
+        #     if appointmentObj.from_time in available_fromObj_list:
+        #         index = available_fromObj_list.index(appointmentObj.from_time)
+        #         available_toObj_list.pop(index)
+        #         del slotObjs[index]
+        #     if appointmentObj.to_time in available_toObj_list:
+        #         index = available_toObj_list.index(appointmentObj.to_time)
+        #         available_fromObj_list.pop(index)
+        #         del slotObjs[index]
+
+        print(f"{slotObjs=}")
         for appointmentObj in appointmentObjs:
-            if appointmentObj.from_time in available_fromObj_list:
-                index = available_fromObj_list.index(appointmentObj.from_time)
-                available_toObj_list.pop(index)
-                del slotObjs[index]
-            if appointmentObj.to_time in available_toObj_list:
-                index = available_toObj_list.index(appointmentObj.to_time)
-                available_fromObj_list.pop(index)
-                del slotObjs[index]
+            print(f"{appointmentObj.slot_index=}, {type(appointmentObj.slot_index)=}")
+            print(f"{slotObjs[appointmentObj.slot_index]=}")
+            del slotObjs[appointmentObj.slot_index]
+
+        print(f"{slotObjs=}")
         
         # available_from_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_fromObj_list]
         # available_to_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_toObj_list]
         available_slots = [{
             "from_time": slotObj.get("from_time").strftime("%I:%M %p"),
             "to_time": slotObj.get("to_time").strftime("%I:%M %p"),
+            "slot_index": slotObj.get("slot_index"),
         } for slotObj in slotObjs.values()]
 
+        print(f"{available_slots=}")
         if appointment_from_time is None or appointment_to_time is None:
             return {
                 "message": f"Available Slot(s) on {appointment_dateObj.strftime("%d-%B-%Y")}.",
@@ -148,36 +166,63 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
         
         appointment_fromObj = datetime.strptime(appointment_from_time, "%I:%M %p").time()
         appointment_toObj = datetime.strptime(appointment_to_time, "%I:%M %p").time()
-        print(f"{appointment_fromObj in available_fromObj_list=}, {appointment_toObj in available_toObj_list=}")
-        if appointment_fromObj in available_fromObj_list and appointment_toObj in available_toObj_list:
-            from_index = available_fromObj_list.index(appointment_fromObj)
-            to_index = available_toObj_list.index(appointment_toObj)
-            print(f"{from_index=}, {to_index=}, {from_index == to_index}")
-            print(f"{doctorObj=}, {patientObj=}, {appointment_dateObj=}, {appointment_fromObj=}, {appointment_toObj=}")
-            if from_index and to_index and from_index == to_index:
-                try:
-                    appointmentObj = Appointment.objects.create(
-                        doctor = doctorObj,
-                        patient = patientObj,
-                        appointment_date = appointment_dateObj,
-                        from_time = appointment_fromObj,
-                        to_time = appointment_toObj,
-                        status = "Active",
-                    )
+        print(f"{slots_index[appointment_fromObj]=}, {slots_index[appointment_fromObj].get("slot_index")=}")
+        # print(f"{slots_index[appointment_toObj]=}, {slots_index[appointment_toObj].get("slot_index")=}")
+        try:
+            appointmentObj = Appointment.objects.create(
+                doctor = doctorObj,
+                patient = patientObj,
+                appointment_date = appointment_dateObj,
+                from_time = appointment_fromObj,
+                to_time = appointment_toObj,
+                slot_index = int(slots_index[appointment_fromObj].get("slot_index")),
+                status = "Active",
+            )
+        
+            return {
+                "message": f"Appointment Created on {appointment_dateObj.strftime("%d-%B-%Y")} from {appointment_fromObj.strftime("%I:%M %p")} to {appointment_toObj.strftime("%I:%M %p")}, with {appointmentObj.id} as Appointment ID.",
+                "created": True,
+                "appointment_id": appointmentObj.id,
+                "appointmentObj": appointmentObj,
+                # "available": True,
+                # "available_from_slots": available_from_slots,
+                # "available_to_slots": available_to_slots,
+                # "available_slots": available_slots,
+            }
+        except Exception as err:
+            print(f"{err=}")
+            pass
+        # print(f"{appointment_fromObj in available_fromObj_list=}, {appointment_toObj in available_toObj_list=}")
+        # if appointment_fromObj in available_fromObj_list and appointment_toObj in available_toObj_list:
+        #     from_index = available_fromObj_list.index(appointment_fromObj)
+        #     to_index = available_toObj_list.index(appointment_toObj)
+        #     print(f"{from_index=}, {to_index=}, {from_index == to_index}")
+        #     print(f"{doctorObj=}, {patientObj=}, {appointment_dateObj=}, {appointment_fromObj=}, {appointment_toObj=}")
+        #     if from_index and to_index and from_index == to_index:
+        #         try:
+        #             appointmentObj = Appointment.objects.create(
+        #                 doctor = doctorObj,
+        #                 patient = patientObj,
+        #                 appointment_date = appointment_dateObj,
+        #                 from_time = appointment_fromObj,
+        #                 to_time = appointment_toObj,
+        #                 slot_index = int(slots_index[appointment_fromObj].get("slot_index")),
+        #                 status = "Active",
+        #             )
                 
-                    return {
-                        "message": f"Appointment Created on {appointment_dateObj.strftime("%d-%B-%Y")}, with {appointmentObj.id} as Appointment ID.",
-                        "created": True,
-                        "appointment_id": appointmentObj.id,
-                        "appointmentObj": appointmentObj,
-                        # "available": True,
-                        # "available_from_slots": available_from_slots,
-                        # "available_to_slots": available_to_slots,
-                        # "available_slots": available_slots,
-                    }
-                except Exception as err:
-                    print(f"{err=}")
-                    pass
+        #             return {
+        #                 "message": f"Appointment Created on {appointment_dateObj.strftime("%d-%B-%Y")}, with {appointmentObj.id} as Appointment ID.",
+        #                 "created": True,
+        #                 "appointment_id": appointmentObj.id,
+        #                 "appointmentObj": appointmentObj,
+        #                 # "available": True,
+        #                 # "available_from_slots": available_from_slots,
+        #                 # "available_to_slots": available_to_slots,
+        #                 # "available_slots": available_slots,
+        #             }
+        #         except Exception as err:
+        #             print(f"{err=}")
+        #             pass
 
         return {
             "message": f"Failed to create Appointment on {appointment_dateObj.strftime("%d-%B-%Y")} at {appointment_from_time} and {appointment_to_time}",
