@@ -204,15 +204,20 @@ def bot_chat(request):
             response_available = response_data.get("available")
             available_slots = response_data.get("available_slots")
 
-            options = []
-            for available_slot in available_slots:
-                options.append({
-                    "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
-                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                    "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
-                })
-            response = [response_message, *mappings.get("book_appointment_slots").get("title")]
-            request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
+            if response_data.get("available", False):
+                options = []
+                for available_slot in available_slots:
+                    options.append({
+                        "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                    })
+                response = [response_message, *mappings.get("book_appointment_slots").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
+            else:
+                options = []
+                response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
         
         elif request_next_option == "book_appointment_with_slot":
             print(f"{request_next_option=}")
@@ -232,16 +237,21 @@ def bot_chat(request):
                 request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
                 options = list(mappings.get("home").get("options").values())
             else:
-                response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
-                request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
-                available_slots = response_data.get("available_slots")
-                options = []
-                for available_slot in available_slots:
-                    options.append({
-                        "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
-                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                        "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
-                    })
+                if response_data.get("available", False):
+                    response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
+                    request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
+                    available_slots = response_data.get("available_slots")
+                    options = []
+                    for available_slot in available_slots:
+                        options.append({
+                            "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                            "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                            "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                        })
+                else:
+                    response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                    request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
+                    options = []
 
         return JsonResponse(
             {

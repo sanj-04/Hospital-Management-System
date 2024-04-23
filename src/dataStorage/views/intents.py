@@ -80,6 +80,7 @@ mappings = {
       "Oops..!, Failed Book Appointment.",
     ],
     "options": {},
+    "next_action": "book_appointment",
   },
 
   "book_appointment_complete": {
