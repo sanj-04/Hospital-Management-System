@@ -91,4 +91,18 @@ mappings = {
       "home": "Go to Home.",
     },
   },
+
+  "logout": {
+    "title": [
+      "Successfully Logout out.",
+    ],
+    "options": {
+      "logout": {
+        "text": "Login",
+        "class_list": "chat_option btn btn-sm btn-outline-info m-2 float-end",
+        "option_id": "login",
+      },
+    },
+    "next_action": "home",
+  },
 }

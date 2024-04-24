@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.http.request import QueryDict
-from dataStorage.models import Patient, Token
+from dataStorage.models import Patient, Token, Appointment
 from django.views.decorators.csrf import csrf_exempt
 import pyotp
 from base64 import b32encode
@@ -168,12 +168,19 @@ def bot_chat(request):
         request_next_option = request.session.get("next_action")
         request_content = request.POST.get("content")
 
+        # print(f"{request_selected_option=}")
+
         if request_selected_option == "login" or request_content.lower() == "login" or request_next_option == "login":
             request.session["patient_id"] = None
             request.session["patient_name"] = None
             response = mappings.get("login").get("title")
             request.session["next_action"] = mappings.get("login").get("next_action")
         
+        elif request_selected_option == "home":
+            response = ["Select a Operation."]
+            options = list(mappings.get("home").get("options").values())
+            request.session["next_action"] = None
+
         elif request_next_option == "home":
             try:
                 patientObj = Patient.objects.get(id = int(request_content))
@@ -198,7 +205,7 @@ def bot_chat(request):
                 doctor_info=None,
                 appointment_date=request_content,
             )
-            print(f"{response_data=}")
+            # print(f"{response_data=}")
             response_message = response_data.get("message")
             response_created = response_data.get("created")
             response_available = response_data.get("available")
@@ -212,6 +219,11 @@ def bot_chat(request):
                         "class_list": "chat_option btn btn-sm btn-outline-info m-2",
                         "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
                     })
+                options.append({
+                    "text": "Home",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": "home",
+                })
                 response = [response_message, *mappings.get("book_appointment_slots").get("title")]
                 request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
             else:
@@ -220,8 +232,8 @@ def bot_chat(request):
                 request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
         
         elif request_next_option == "book_appointment_with_slot":
-            print(f"{request_next_option=}")
-            print(f"{request_content=}, {request_selected_option=}")
+            # print(f"{request_next_option=}")
+            # print(f"{request_content=}, {request_selected_option=}")
             from_slot, to_slot = request_selected_option.replace("_", " ").split("-") #12:15_PM-12:30_PM
             from dataStorage.views import book_appointment
             response_data = book_appointment(
@@ -248,10 +260,71 @@ def bot_chat(request):
                             "class_list": "chat_option btn btn-sm btn-outline-info m-2",
                             "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
                         })
+                    options.append({
+                        "text": "Home",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": "home",
+                    })
                 else:
                     response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
                     request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
                     options = []
+        
+        elif request_selected_option == "view_appointment":
+            appointmentObjs = Appointment.objects.filter(
+                patient_id = request.session.get("patient_id"),
+                status = "Active",
+            ).order_by("appointment_date")
+            response = [f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}" for appointmentObj in appointmentObjs]
+            if appointmentObjs.count() == 0:
+                response = ["No Appointment(s)."]
+            options = list(mappings.get("home").get("options").values())
+            request.session["next_action"] = None
+            # print(f"{request_next_option=}")
+            # print(f"{request_content=}, {request_selected_option=}")
+
+        elif request_selected_option == "cancel_appointment":
+            appointmentObjs = Appointment.objects.filter(
+                patient_id = request.session.get("patient_id"),
+                status = "Active",
+            ).order_by("appointment_date")
+            options = []
+            if appointmentObjs.count() == 0:
+                request.session["next_action"] = None
+                response = ["No Appointment(s)."]
+                options = list(mappings.get("home").get("options").values())
+            else:
+                request.session["next_action"] = "cancel_appointment_selected"
+                response = ["Select a Appointment to Cancel."]
+                for appointmentObj in appointmentObjs:
+                    options.append({
+                        "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": f"{appointmentObj.id}",
+                    })
+                options.append({
+                    "text": "Home",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": "home",
+                })
+        
+        elif request_next_option == "cancel_appointment_selected":
+            # print(f"{request_next_option=}")
+            # print(f"{request_content=}, {request_selected_option=}")
+            appointmentObj = Appointment.objects.get(id = request_selected_option)
+            # appointmentObj.status = "Canceled"
+            # appointmentObj.save()
+            appointmentObj.delete()
+            response = ["Appointment Canceled."]
+            options = list(mappings.get("home").get("options").values())
+            request.session["next_action"] = None
+
+        elif request_selected_option == "logout":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            response = mappings.get("logout").get("title")
+            request.session["next_action"] = mappings.get("login").get("next_action")
+            options = list(mappings.get("logout").get("options").values())
 
         return JsonResponse(
             {

@@ -35,6 +35,7 @@ status_choices = (
     ("Active", "Active"),
     ("Ongoing", "Ongoing"),
     ("Completed", "Completed"),
+    ("Canceled", "Canceled"),
 )
 
 schedule_status_choices = (

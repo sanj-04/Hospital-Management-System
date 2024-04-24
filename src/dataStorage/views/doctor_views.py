@@ -4,6 +4,8 @@ from django.shortcuts import render, redirect
 from dataStorage.models import Patient, Appointment, Medicine, Schedule, Doctor
 from dataStorage.forms import PatientForm
 from dataStorage.models import status_choices, schedule_status_choices
+from django.db.models import Q
+from datetime import datetime, time
 
 @login_required
 # @user_passes_test(lambda u: u.is_staff)
@@ -14,9 +16,20 @@ def doctor_home(request):
     if request.method == "GET":
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
-        appointmentObjs = Appointment.objects.all().order_by("appointment_date")
         scheduleObjs = Schedule.objects.filter(doctor_id=request.user.id)
         doctorObj = Doctor.objects.get(user=request.user.id)
+        current_datetime = datetime.now()
+        appointmentObjs = Appointment.objects.filter(
+            Q(doctor = doctorObj)
+            &Q(
+                Q(appointment_date__lte = current_datetime.date())
+                &Q(from_time__lte = current_datetime.time())
+            )
+        )
+        for appointmentObj in appointmentObjs:
+            appointmentObj.status = "Completed"
+            appointmentObj.save()
+        appointmentObjs = Appointment.objects.all().order_by("appointment_date")
         patientFormObj = PatientForm()
         context = {
             "patients": [
