@@ -328,7 +328,8 @@
         <tr class="schedule">
           <td>{{schedule.schedule_month_year}}</td>
           <td>
-            <span name="span_unavailable_count_update">{{schedule.rejected_days_count}}</span>
+            <span name="span_unavailable_count_update" data-bs-placement="right"
+            data-toggle="tooltip" data-bs-original-title="{{schedule.rejected_days}}">{{schedule.rejected_days_count}}</span>
             <input type="text" name="id_unavailable_count_update" autocomplete="off"
               class="datepicker_multiple form-control" hidden value="{{schedule.rejected_days}}">
           </td>
@@ -401,6 +402,7 @@
       //   weekStart: 0,
       // });
       datepicker_operation({{unavailable|safe}});
+      populate_unavailable_tooltip();
 
       document.getElementById('addBtn').addEventListener('click', event => {
         form = `<div class="input-group input-group-sm lex-nowrap mb-3">

@@ -215,6 +215,22 @@ function datepicker_operation(datepicker_operation) {
   // });
 }
 
+function populate_unavailable_tooltip() {
+  document.querySelectorAll('[name="id_unavailable_count_update"]').forEach(x => {
+    let tooltip = '';
+    let rejected_days_data = x.value.split(',');
+    if (x.value != '') {
+      rejected_days_data.forEach(element => {
+        tooltip=tooltip +`<li>`+ element+'</li>';
+      });
+    } else {
+      tooltip = 'No Day(s) Rejected';
+    }
+    x.parentElement.children[0].setAttribute('data-bs-original-title', tooltip);
+    $('[data-toggle="tooltip"]').tooltip({html:true});
+  });
+}
+
 function reloadElements(data) {
   document.querySelectorAll('.patient').forEach(x => {x.remove();});
   document.querySelectorAll('.appointment').forEach(x => {x.remove();});
@@ -301,7 +317,8 @@ function reloadElements(data) {
     newCellEle1.innerText = schedule.schedule_month_year;
 
     let newCellEle2 = newRowEle.insertCell();
-    newCellEle2.innerHTML = `<span name="span_unavailable_count_update">`+schedule.rejected_days_count+`</span>
+    newCellEle2.innerHTML = `<span name="span_unavailable_count_update" data-bs-placement="right"
+    data-toggle="tooltip" data-bs-original-title="">`+schedule.rejected_days_count+`</span>
     <input type="text" name="id_unavailable_count_update" autocomplete="off"
     class="datepicker_multiple form-control" hidden value="`+schedule.rejected_days+`"></input>`;
 
@@ -323,6 +340,8 @@ function reloadElements(data) {
     <button onclick="scheduleUpdateRow(this);" data-schedule_id="`+schedule.schedule_id+`" class="btn btn-sm btn-success" hidden>Done</button>
     <button onclick="scheduleCancelUpdate(this);" class="btn btn-sm btn-secondary" hidden>Cancel</button>`;
   });
+
+  populate_unavailable_tooltip();
 
   let medicine_options = '';
   let patients_options = '';
