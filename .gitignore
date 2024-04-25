@@ -1,6 +1,8 @@
 !src/dataStorage/migrations/__init__.py
+!Files/mediaFile/.nomedia
 
 push.py
 src/db.sqlite3
 src/credentials/.env
 src/dataStorage/migrations/*
+Files/mediaFile/*
