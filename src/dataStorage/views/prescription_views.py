@@ -41,8 +41,14 @@ import qrcode, io, base64, os
 
 def process_prescription(prescription_id, request=None, mode="html"):
     prescriptionObj = Prescription.objects.get(id = prescription_id)
-
-    qrCode = qrcode.make(prescriptionObj.prescription_hash)
+    qr_code_json = {
+        "id": prescriptionObj.id,
+        "hash": prescriptionObj.prescription_hash,
+        "patient_name": prescriptionObj.patient.user.username,
+        "doctor_name": prescriptionObj.doctor.user.username,
+        "timestamp": prescriptionObj.createTimestamp.strftime("%d-%B-%Y %I:%M %p"),
+    }
+    qrCode = qrcode.make(qr_code_json)
     qrCode = qrCode.resize((162, 162))
     qrCodeBytes = io.BytesIO()
     qrCode.save(qrCodeBytes, format='JPEG')
