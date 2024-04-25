@@ -58,6 +58,8 @@ mysqlclient = "==2.2.4"
 qrcode = {extras = ["pil"], version = "*"}
 
 [dev-packages]
+xhtml2pdf = "*"
+pdfkit = "*"
 
 [requires]
 python_version = "3.12"
