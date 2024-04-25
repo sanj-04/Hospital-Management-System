@@ -2,10 +2,24 @@
 <html lang="en">
 <head>
     {% load static %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prescription</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css"/>
+    <style>
+        @page {
+            size: a4 landscape;
+            margin: 2cm;
+        }
+        /* @frame header_frame {
+            -pdf-frame-content: header_content;
+            left: 50pt; width: 512pt; top: 50pt; height: 40pt;
+        }
+        @frame content_frame {
+            left: 50pt; width: 512pt; top: 90pt; height: 632pt;
+        }
+        @frame footer_frame {
+            -pdf-frame-content: footer_content;
+            left: 50pt; width: 512pt; top: 772pt; height: 20pt;
+        } */
+    </style>
 </head>
 <body>
   <div class="container">
@@ -17,7 +31,7 @@
                 </div>
                 <div class="float-center">
                     <div class="text-center mb-3">
-                        <div class="fs-1">{{hospital_name}}</div><br>
+                        <div class="fs-1">{{hospital_name}}</div>
                         {{address}}<br>
                         {{phone}} {{email}}<br>
                     </div>
@@ -88,6 +102,5 @@
     <br><br>
     <div class="float-end">[Authorised Signature]</div>
   </div>
-  <script type="text/javascript" src="{% static 'javascript/bootstrap.js' %}"></script>
 </body>
 </html>
