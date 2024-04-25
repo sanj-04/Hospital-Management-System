@@ -30,25 +30,6 @@ function showPatientDetails(ele) {
   fetchPatientDetails(patient_id);
 }
 
-function populatePrescriptions(prescriptions) {
-  let prescription_cardsEle = document.getElementById('prescription_cards');
-  let row = '';
-  prescription_cardsEle.innerHTML = row;
-  prescriptions.forEach(prescription => {
-    row = row + `<div class="col-sm-4 mb-3 mb-sm-0">
-      <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
-        <div class="card-header">`+prescription.name+`</div>
-        <div class="card-body text-center">
-          <button class="btn btn-sm btn-success float-center" id="prescription_`+prescription.id+`">View</button>
-          <h5 class="card-title" hidden>Primary card title</h5>
-          <p class="card-text" hidden>Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-        </div>
-      </div>
-    </div>`;
-  });
-  prescription_cardsEle.innerHTML = row;
-}
-
 function createPrescription() {
   let medicine_name = document.querySelectorAll('[name="medicine_name"]');
   let before_breakfast = document.querySelectorAll('[name="before_breakfast"]');

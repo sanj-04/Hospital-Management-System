@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="card mt-5">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <div class="float-begin">
+                    <img src="{% static 'images/logo.png'%}" style="width: 100px; height: 55px;">
+                </div>
+                <div class="float-center">
+                    <div class="text-center mb-3">
+                        <div class="fs-1">{{hospital_name}}</div><br>
+                        {{address}}<br>
+                        {{phone}} {{email}}<br>
+                    </div>
+                </div>
+                <div class="float-end">
+                    <img src="" style="width: 180px; height: 180px;" class="rounded float-start">
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="row d-flex justify-content-between">
+        <div class="col-6 float-begin">
+            <div class="col">
+                <span class="fw-bolder">Patient Name:</span> {{patient_name}}
+            </div>
+            <div class="col">
+                <span class="fw-bolder">Patient ID:</span> {{patient_id}}
+            </div>
+            <div class="col">
+                <span class="fw-bolder">DOB (Age):</span> {{patient_dob}} [ {{patient_age}} ]
+            </div>
+        </div>
+        <div class="col-6 float-end">
+            <div class="col">
+                <span class="fw-bolder">Doctor Name:</span> {{doctor_name}}
+            </div>
+            <div class="col">
+                <span class="fw-bolder">Department:</span> {{department}}
+            </div>
+            <div class="col">
+                <span class="fw-bolder">Consultant on:</span> {{createTimestamp}}
+            </div>
+        </div>
+    </div>
+    <hr>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <td rowspan="2" style="text-align: left;" class="fw-bolder">Medicine Name</td>
+                <td colspan="6" style="text-align: center;" class="fw-bolder">Intake Instruction(s)</td>
+                <td rowspan="2" style="text-align: left;" class="fw-bolder">Total Count</td>
+            </tr>
+            <tr class="table-group-divider">
+                <td style="text-align: left;" class="fw-bolder">Before Breakfast</td>
+                <td style="text-align: left;" class="fw-bolder">After Breakfast</td>
+                <td style="text-align: left;" class="fw-bolder">Before Lunch</td>
+                <td style="text-align: left;" class="fw-bolder">After Lunch</td>
+                <td style="text-align: left;" class="fw-bolder">Before Dinner</td>
+                <td style="text-align: left;" class="fw-bolder">After Dinner</td>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for medicine in medicines %}
+            <tr>
+                <td style="text-align: left;">{{medicine.medicine_name}}</td>
+                <td style="text-align: center;">{{medicine.before_breakfast}}</td>
+                <td style="text-align: center;">{{medicine.after_breakfast}}</td>
+                <td style="text-align: center;">{{medicine.before_lunch}}</td>
+                <td style="text-align: center;">{{medicine.after_lunch}}</td>
+                <td style="text-align: center;">{{medicine.before_dinner}}</td>
+                <td style="text-align: center;">{{medicine.after_dinner}}</td>
+                <td style="text-align: center;">{{medicine.before_breakfast|add:medicine.after_breakfast|add:medicine.before_lunch|add:medicine.after_lunch|add:medicine.before_dinner|add:medicine.after_dinner}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br><br>
+    <div class="float-end">[Authorised Signature]</div>
+  </div>
+  <script type="text/javascript" src="{% static 'javascript/bootstrap.js' %}"></script>
+</body>
+</html>
