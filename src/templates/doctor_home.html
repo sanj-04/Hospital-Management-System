@@ -204,10 +204,10 @@
           <ul class="list-group">
             <li class="list-group-item border border-dark">
               <div class="row">
-                  <div class="col-5">
+                  <div class="col-4">
                     <strong>Patient Name: </strong><span id="patient_info_name"></span>
                   </div>
-                  <div class="col-4">
+                  <div class="col-5">
                     <strong>Patient Age: </strong><span id="patient_info_age"></span>
                   </div>
                   <div class="col-2">
@@ -774,9 +774,12 @@
           <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
             <div class="card-header">`+prescription.name+`</div>
             <div class="card-body text-center">
-              <button hidden class="btn btn-sm btn-success float-center" id="prescription_`+prescription.id+`">View</button>
-              <a class="btn btn-sm btn-success float-center" id="prescription_`+prescription.id+`"
-              href="`+pres_url+`?prescription_id=`+prescription.id+`" target="pres">View</a>
+              <div class="d-flex justify-content-between">
+                <a class="btn btn-sm btn-success float-begin" id="prescription_`+prescription.id+`"
+                href="`+pres_url+`?prescription_id=`+prescription.id+`" target="pres">View</a>
+                <button class="btn btn-sm btn-info float-end prescription_btn"
+                id="prescription_btn_`+prescription.id+`" data-prescription_id="`+prescription.id+`">Download</button>
+              </div>
               <h5 class="card-title" hidden>Primary card title</h5>
               <p class="card-text" hidden>Some quick example text to build on the card title and make up the bulk of the card's content.</p>
             </div>
@@ -784,6 +787,37 @@
         </div>`;
       });
       prescription_cardsEle.innerHTML = row;
+      document.querySelectorAll(".prescription_btn").forEach(ele => {
+        ele.addEventListener("click", function() {
+          let prescription_id = ele.getAttribute("data-prescription_id");
+          $.ajax({
+            url : "{% url 'dataStorage:prescription_operation' %}",
+            type : "POST", // http method
+            data : {
+              'prescription_id': prescription_id,
+              'mode': 'download',
+              'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success : function(json,textMsg, xhr) {
+              var link = document.createElement("a");
+              link.download = json.filename;
+              link.href = json.fileURL;
+              link.target = "_blank";
+              link.click();
+            },
+            error : function(xhr, errmsg, err) {
+              window.scrollTo(0, 0);
+              location.reload();
+            },
+            statusCode: {
+              401: function() {
+                window.scrollTo(0, 0);
+                location.reload();
+              }
+            }
+          });
+        });
+      });
     }
   </script>
 {% endblock content %}
