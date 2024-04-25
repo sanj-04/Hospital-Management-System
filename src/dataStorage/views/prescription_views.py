@@ -1,17 +1,21 @@
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.http.request import QueryDict
 from django.shortcuts import render
-from dataStorage.models import Patient, Appointment, Doctor, Schedule, Prescription
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.db.models import Q
+from dataStorage.models import Prescription
+import qrcode, io, base64
 
 @login_required
 def prescription_operation(request):
     if request.method == "GET" and not request.is_ajax():
         prescription_id = request.GET.get("prescription_id")
         prescriptionObj = Prescription.objects.get(id = prescription_id)
+
+        qrCode = qrcode.make(prescriptionObj.prescription_hash)
+        qrCode = qrCode.resize((162, 162))
+        qrCodeBytes = io.BytesIO()
+        qrCode.save(qrCodeBytes, format='JPEG')
+        qrCodeBytes = qrCodeBytes.getvalue()
+        qrCode = base64.b64encode(qrCodeBytes).decode('utf-8')
+
         context = {
             "hospital_name": "Hospital Name",
             "address": "Hospital Address",
@@ -25,5 +29,6 @@ def prescription_operation(request):
             "department": "-",
             "createTimestamp": prescriptionObj.createTimestamp,
             "medicines": prescriptionObj.prescription_json.get("medicines"),
+            "qrCode": qrCode,
         }
         return render(request, "prescription.html", context)

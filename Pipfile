@@ -42,7 +42,6 @@ pyotp = "==2.9.0"
 pypng = "==0.20220715.0"
 pytz = "==2024.1"
 pywebpush = "==1.14.1"
-qrcode = "==7.4.2"
 requests = "==2.31.0"
 six = "==1.16.0"
 smmap = "==5.0.1"
@@ -56,6 +55,7 @@ whitenoise = "==6.6.0"
 ulid-py = "==1.1.0"
 python-dotenv = "==1.0.1"
 mysqlclient = "==2.2.4"
+qrcode = {extras = ["pil"], version = "*"}
 
 [dev-packages]
 
