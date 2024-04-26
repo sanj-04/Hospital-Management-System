@@ -11,6 +11,22 @@
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">Registration</legend>
             <div class='col-md-6'>{{ form.username | as_crispy_field }}</div>
+            <div class="col-md-6">
+                <div id="div_id_date_of_birth" class="mb-3">
+                    <label for="id_date_of_birth" class="form-label requiredField">
+                    Date of Birth<span class="asteriskField">*</span>
+                    </label>
+                    <input type="text" name="date_of_birth" tabindex="1" class="datepicker_dob form-control" data-date-format="dd/mm/yyyy" required="required" autocomplete="off" id="id_date_of_birth">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="div_id_phone_number" class="mb-3">
+                    <label for="id_phone_number" class="form-label requiredField">
+                    Phone Number<span class="asteriskField">*</span>
+                    </label>
+                    <input type="text" name="phone_number" class="textinput form-control" required="" id="id_phone_number">
+                </div>
+            </div>
             <div class='col-md-6'>{{ form.email | as_crispy_field }}</div>
             <div class='col-md-6'>{{ form.password1 | as_crispy_field }}</div>
             <div class='col-md-6'>{{ form.password2 | as_crispy_field }}</div>
@@ -20,6 +36,18 @@
         </div>
     </form>
 </div>
+<script type="application/javascript">
+    $(function(){
+        $('.datepicker_dob').datepicker({
+            format: 'dd-M-yyyy',
+            autoclose: true,
+            monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+            monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+            weekStart: 0,
+            calendarWeeks: true,
+        });
+    });
+</script>
 {% endblock %}
 
 
