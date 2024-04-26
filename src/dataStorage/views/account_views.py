@@ -9,6 +9,7 @@ from django.contrib.auth.signals import (
 from django.dispatch import receiver
 from django.db.models import Q
 from django.http import JsonResponse
+from dataStorage.forms import PatientForm
 
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, **kwargs):
@@ -26,7 +27,9 @@ def on_user_login_failed(sender, request, **kwargs):
 # @login_required
 def home(request):
     if request.method == "GET" and not request.is_ajax():
-        context = {}
+        context = {
+            "patientForm": PatientForm(),
+        }
         return render(request, "main.html", context)
 
 def pres(request):

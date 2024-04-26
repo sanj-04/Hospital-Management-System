@@ -51,7 +51,7 @@ class Patient(models.Model):
     # patient_id = models.SlugField(max_length=40, unique=True, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING, unique=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=False, null=False, unique=True)
     token_key = models.CharField(
         max_length=80,
         validators=[key_validator],
