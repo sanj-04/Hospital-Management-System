@@ -8,6 +8,7 @@ app_name = "dataStorage"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("home", views.home_old, name="home_old"),
     path("pres", views.pres, name="pres"),
     path("cards", TemplateView.as_view(template_name="cards.html"), name="cards"),
     path("generate_token", views.generate_token, name="generate_token"),

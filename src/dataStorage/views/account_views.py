@@ -31,6 +31,13 @@ def home(request):
             "patientForm": PatientForm(),
         }
         return render(request, "main.html", context)
+    
+def home_old(request):
+    if request.method == "GET" and not request.is_ajax():
+        context = {
+            "patientForm": PatientForm(),
+        }
+        return render(request, "main_OLD.html", context)
 
 def pres(request):
     context = {}

@@ -65,3 +65,14 @@ function showForgotPasswordPopup() {
 function closeForgotPasswordPopup() {
   forgotPasswordPopup.style.display = "none";
 }
+
+function datepicker_operation() {
+  $('.datepicker_dob').datepicker({
+    format: 'dd-M-yyyy',
+    autoclose: true,
+    monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    weekStart: 0,
+    calendarWeeks: true,
+  });
+}
