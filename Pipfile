@@ -60,6 +60,8 @@ qrcode = {extras = ["pil"], version = "*"}
 [dev-packages]
 xhtml2pdf = "*"
 pdfkit = "*"
+weasyprint = "*"
+django-wkhtmltopdf = "*"
 
 [requires]
 python_version = "3.12"
