@@ -1,4 +1,57 @@
 mappings = {
+    
+  "register": {
+    "title": [
+      "Provide your Name.",
+    ],
+    "options": {},
+    "next_action": "register_dob",
+  },
+
+  "register_dob": {
+    "title": [
+      "Provide your Date of Birth in DD-MM-YYYY format.",
+    ],
+    "options": {},
+    "next_action": "register_phone",
+  },
+
+  "register_phone": {
+    "title": [
+      "Provide your Phone Number.",
+    ],
+    "options": {},
+    "next_action": "register_check",
+  },
+
+  "register_success": {
+    "title": [
+      "Patient Registered.",
+    ],
+    "options": {
+      "login": {
+        "text": "Login",
+        "class_list": "chat_option btn btn-sm btn-outline-info m-2 float-end",
+        "option_id": "login",
+      },
+    },
+    "next_action": "login",
+  },
+
+  "register_failed": {
+    "title": [
+      "Patient Registertion Failed.",
+    ],
+    "options": {
+      "register": {
+        "text": "Register",
+        "class_list": "chat_option btn btn-sm btn-outline-success m-2 float-end",
+        "option_id": "register",
+      },
+    },
+    "next_action": "register",
+  },
+
   "login": {
     "title": [
       "Provide your Name or ID.",

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.http.request import QueryDict
 from dataStorage.models import Patient, Token, Appointment
@@ -6,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 import pyotp
 from base64 import b32encode
 from binascii import unhexlify
+from datetime import datetime
 
 def get_token(hex_key, hop=None):
     secret = b32encode((unhexlify(hex_key))).decode("UTF-8")
@@ -169,8 +171,88 @@ def bot_chat(request):
         request_content = request.POST.get("content")
 
         # print(f"{request_selected_option=}")
+        # print(f"{request_next_option=}")
+        # print(f"{request_content=}")
 
-        if request_selected_option == "login" or request_content.lower() == "login" or request_next_option == "login":
+        if request_selected_option == "register" or request_content.lower() == "register" or request_next_option == "register":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            request.session["register_patient_name"] = None
+            request.session["register_patient_phone"] = None
+            request.session["register_patient_dob"] = None
+            response = mappings.get("register").get("title")
+            request.session["next_action"] = mappings.get("register").get("next_action")
+
+        elif request_next_option == "register_dob":
+            try:
+                patientObj = Patient.objects.get(user__username = request_content)
+                response = ["User with name already Exists, Try different Name.", *mappings.get("register").get("title")]
+                request.session["next_action"] = mappings.get("register").get("next_action")
+            except Patient.DoesNotExist as err:
+                request.session["register_patient_name"] = request_content
+                response = mappings.get("register_dob").get("title")
+                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+
+        elif request_next_option == "register_phone" and request.session.get("register_patient_name"):
+            try:
+                patient_dobObj = datetime.strptime(request_content, "%d-%m-%Y")
+                request.session["register_patient_dob"] = request_content
+                response = mappings.get("register_phone").get("title")
+                request.session["next_action"] = mappings.get("register_phone").get("next_action")
+            except Exception as err:
+                print(f"{err=}")
+                request.session["register_patient_dob"] = None
+                response = ["Enter Date of Birth is Invalid.", *mappings.get("register_dob").get("title")]
+                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+
+        elif request_next_option == "register_check" and request.session.get("register_patient_dob"):
+            try:
+                patientObj = Patient.objects.get(phone_number = request_content)
+                response = ["User with phone number already Exists, Try different Phone Number.", *mappings.get("register_phone").get("title")]
+                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+            except Patient.DoesNotExist as err:
+                request.session["register_patient_phone"] = request_content
+                try:
+                    date_of_birthObj = datetime.strptime(request.session.get("register_patient_dob"), "%d-%m-%Y")  # "%Y-%m-%d"
+                    try:
+                        userObj = User.objects.get(username=request.session.get("register_patient_name"))
+                    except User.DoesNotExist as e:
+                        userObj = User.objects.create_user(
+                            username=request.session.get("register_patient_name"),
+                            email=None,
+                            password=request.session.get("register_patient_phone"),
+                        )
+                        userObj.save()
+                    try:
+                        patientObj = Patient.objects.get(user_id=userObj.id)
+                        request.session["register_patient_name"] = None
+                        request.session["register_patient_phone"] = None
+                        request.session["register_patient_dob"] = None
+                        response = mappings.get("register_failed").get("title")
+                        request.session["next_action"] = mappings.get("register_failed").get("next_action")
+                        options = list(mappings.get("register_failed").get("options").values())
+                    except Patient.DoesNotExist:
+                        patientObj = Patient.objects.create(
+                            user_id=userObj.id,
+                            date_of_birth=date_of_birthObj.date(),
+                            phone_number=request.session.get("register_patient_phone"),
+                        )
+                        response = mappings.get("register_success").get("title")
+                        request.session["next_action"] = mappings.get("register_success").get("next_action")
+                        options = list(mappings.get("register_success").get("options").values())
+                        request.session["register_patient_name"] = None
+                        request.session["register_patient_phone"] = None
+                        request.session["register_patient_dob"] = None
+                except Exception as err:
+                    request.session["register_patient_name"] = None
+                    request.session["register_patient_phone"] = None
+                    request.session["register_patient_dob"] = None
+                    response = mappings.get("register_failed").get("title")
+                    request.session["next_action"] = mappings.get("register_failed").get("next_action")
+                    options = list(mappings.get("register_failed").get("options").values())
+                
+
+        elif request_selected_option == "login" or request_content.lower() == "login" or request_next_option == "login":
             request.session["patient_id"] = None
             request.session["patient_name"] = None
             response = mappings.get("login").get("title")

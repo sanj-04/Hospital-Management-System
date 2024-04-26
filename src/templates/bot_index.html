@@ -42,6 +42,15 @@
     chatbox.appendChild(incomingChatBtn);
     chatbox.scrollTo(0, chatbox.scrollHeight);
     incomingChatBtn.addEventListener("click", handleOpt);
+
+    let incomingRegChatBtn = createChatBtn(
+      "Register",
+      "chat_option btn btn-sm btn-outline-success m-2 float-begin",
+      "register",
+    );
+    chatbox.appendChild(incomingRegChatBtn);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+    incomingRegChatBtn.addEventListener("click", handleOpt);
   });
 </script>
 {% endblock content %}

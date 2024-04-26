@@ -7,6 +7,33 @@ from main.settings import MEDIA_ROOT as media_root
 from main.settings import STATICFILES_DIRS as staticfile_dirs
 import qrcode, io, base64, os
 
+from django.http import HttpResponse
+# from django_wkhtmltopdf.views import PDFTemplateView
+
+# class GeneratePDFView(PDFTemplateView):
+#     template_name = "prescription.html"
+#     filename = 'report.pdf'
+#     context_data = {'data': 'Your data to be displayed'}
+
+#     def get_context(self, request):
+#         context = super().get_context(request)
+#         css_path = [os.path.join(f"{staticfile_dirs[0]}", "css\\bootstrap.css")]
+#         context['css_filename'] = css_path
+#         return context
+
+# from django.shortcuts import render
+# from django.http import HttpResponse
+# from django.template.loader import render_to_string
+# from weasyprint import HTML, CSS
+
+# def generate_pdf(template_src, css_path, context):
+#     html_template = render_to_string(template_src, context)
+#     css_file = CSS(css_path)
+#     pdf_file = HTML(string=html_template).render(stylesheets=[css_file])
+#     response = HttpResponse(pdf_file, content_type='application/pdf')
+#     response['Content-Disposition'] = 'attachment; filename="document.pdf"'
+#     return response
+
 # def render_to_pdf(template_src, context_dict={}):
 #     template = get_template(template_src)
 #     html  = template.render(context_dict)
