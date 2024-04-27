@@ -2,16 +2,79 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.http.request import QueryDict
-from dataStorage.models import Patient, Doctor, Prescription
+from dataStorage.models import Patient, Doctor, Prescription, Appointment
+from dataStorage.forms import PatientForm
+from django.db.models import Q
 from datetime import datetime
-import json, hashlib
+from django.shortcuts import render, redirect
 
+@login_required
+def patient_home(request):
+    if request.user.is_staff:
+        return redirect('dataStorage:home')
 
-def hash_dict_content(dictionary):
-    json_string = json.dumps(dictionary, sort_keys=True)
-    hash_object = hashlib.sha256(json_string.encode())
-    return hash_object.hexdigest()
+    if request.method == "GET":
+        patientObj = Patient.objects.get(user = request.user)
+        current_datetime = datetime.now()
+        appointmentObjs = Appointment.objects.filter(
+            Q(patient = patientObj)
+            &Q(
+                Q(appointment_date__lte = current_datetime.date())
+                &Q(from_time__lte = current_datetime.time())
+            )
+        )
+        for appointmentObj in appointmentObjs:
+            appointmentObj.status = "Completed"
+            appointmentObj.save()
+        appointmentObjs = Appointment.objects.filter(
+            patient = patientObj
+        ).order_by("appointment_date")
+        prescriptionObjs = Prescription.objects.filter(patient__user=request.user)
+        doctorObj = Doctor.objects.first()
+        
+        context = {
+            "patient": {
+                "id": patientObj.id,
+                "name": patientObj.user.username,
+                "age": patientObj.age,
+                "date_of_birth": patientObj.date_of_birth.strftime("%d-%b-%Y"),
+                "phone_number": patientObj.phone_number,
+            },
+            "appointments": [
+                {
+                    "appointment_id": appointment.id,
+                    "patient_id": appointment.patient.id,
+                    "patient_name": appointment.patient.user.username,
+                    "appointment_date": appointment.appointment_date.strftime("%d-%b-%Y"),
+                    "appointment_from_time": appointment.from_time.strftime("%H:%M"),
+                    "appointment_from_time_str": appointment.from_time.strftime("%I:%M %p"),
+                    "appointment_to_time": appointment.to_time.strftime("%H:%M"),
+                    "appointment_to_time_str": appointment.to_time.strftime("%I:%M %p"),
+                    "appointment_status": appointment.status,
+                }
+                for appointment in appointmentObjs
+            ],
+            "prescriptions": [
+                {
+                    "id": prescription.id,
+                    "name": prescription.createTimestamp.strftime("%d-%b-%Y %I:%M %p"),
+                }
+                for prescription in prescriptionObjs
+            ],
+            "unavailable": list(doctorObj.setting_json.get("unavailable_days").values()),
+        }
+        if not request.is_ajax():
+            context["patientForm"] = PatientForm()
+            return render(request, "patient_home.html", context)
 
+        elif request.is_ajax():
+            return JsonResponse(
+                {
+                    "message": f"Reloaded by {request.user.username}",
+                    "data": context,
+                },
+                status=200,
+            )
 
 @login_required
 def patient_operation(request):
@@ -72,27 +135,25 @@ def patient_operation(request):
         )
 
     elif request.method == "PUT" and request.is_ajax():
-        patient_id = QueryDict(request.body).get("patient_id")
-        prescription = QueryDict(request.body).get("prescription")
-
-        doctorObj = Doctor.objects.get(user_id=request.user.id)
-        patientObj = Patient.objects.get(id=int(patient_id))
-        prescription_dict = {}
-        prescription_dict["medicines"] = json.loads(prescription)
-        prescription_dict["doctor_name"] = doctorObj.user.username
-        prescription_dict["patient_name"] = patientObj.user.username
-        prescription_dict["date_time"] = datetime.now().strftime("%d-%b-%Y %I:%M %p")
-        
-        prescriptionObj = Prescription.objects.create(
-            prescription_hash=hash_dict_content(prescription_dict),
-            prescription_json=prescription_dict,
-            doctor=doctorObj,
-            patient=patientObj,
-        )
-        return JsonResponse(
-            {
-                "message": f"Added Prescription of {patient_id} by {request.user.username}",
-                "prescription_id": prescriptionObj.id,
-            },
-            status=200,
-        )
+        try:
+            patient_name = QueryDict(request.body).get("patient_name")
+            date_of_birth = QueryDict(request.body).get("date_of_birth")
+            date_of_birthObj = datetime.strptime(date_of_birth, "%d-%b-%Y")  # "%Y-%m-%d"
+            phone_number = QueryDict(request.body).get("phone_number")
+            patientObj = Patient.objects.get(user_id=request.user.id)
+            patientObj.date_of_birth = date_of_birthObj
+            patientObj.phone_number = phone_number
+            patientObj.save()
+            return JsonResponse(
+                {
+                    "message": f"Updated patient {patient_name} by {request.user.username}",
+                },
+                status=200,
+            )
+        except Exception as err:
+            return JsonResponse(
+                {
+                    "message": f"Failed to Create patient {patient_name} by {request.user.username}",
+                },
+                status=404,
+            )

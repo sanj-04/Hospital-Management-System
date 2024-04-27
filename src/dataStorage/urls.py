@@ -24,6 +24,7 @@ urlpatterns = [
     # path("api/logoutall/", knox_views.LogoutAllView.as_view(), name="logoutall"),
 
     path("doctor_home", views.doctor_home, name="doctor_home"),
+    path("patient_home", views.patient_home, name="patient_home"),
     path("patient_operation", views.patient_operation, name="patient_operation"),
     path("appointment_operation", views.appointment_operation, name="appointment_operation"),
     path("schedule_operation", views.schedule_operation, name="schedule_operation"),

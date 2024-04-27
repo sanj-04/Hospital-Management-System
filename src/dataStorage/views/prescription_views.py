@@ -128,6 +128,12 @@ def prescription_operation(request):
 
     if request.method == "GET" and not request.is_ajax():
         prescription_id = request.GET.get("prescription_id")
+        if not request.user.is_staff:
+            prescription_idList = Prescription.objects.filter(
+                patient__user = request.user
+            ).values_list("id", flat=True)
+            if int(prescription_id) not in prescription_idList:
+                return HttpResponse("<h1>404</h1>")
         return process_prescription(prescription_id, request=request, mode="html")
         # return process_prescription(prescription_id, request=request, mode="view")
         # return process_prescription(prescription_id, request=request, mode="download")

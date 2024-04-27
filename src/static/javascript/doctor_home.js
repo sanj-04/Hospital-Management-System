@@ -259,8 +259,8 @@ function reloadElements(data) {
 
     let newCellEle3 = newRowEle.insertCell();
     newCellEle3.innerHTML = `<span name="span_appointment_date_update">`+appointment.appointment_date+`</span>
-    <input type="text" name="id_appointment_date_update" class="datepicker_single datepicker form-control"
-    hidden value="`+appointment.appointment_date+`"></input>`;
+    <input type="text" name="id_appointment_date_update" class="datepicker_single form-control"
+    hidden value="`+appointment.appointment_date+`" autocomplete="off"></input>`;
 
     let newCellEle4 = newRowEle.insertCell();
     newCellEle4.innerHTML = `<span name="span_appointment_from_time_update">`+appointment.appointment_from_time_str+`</span>

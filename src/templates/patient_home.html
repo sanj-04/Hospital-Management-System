@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block styles %}
+#patient_list_div, #patient_info_div {
+  height: calc(100vh - 25vh);
+  background-color: lightgrey;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+#PrescriptionModalBody {
+  height: calc(100vh - 30vh);
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.small-close-btn {
+  height: 0.25em;
+  width: 0.25em;
+  padding: 0.25em 0.25em;
+  padding-y: 0.25rem;
+  padding-x: 0.25rem;
+  font-size: 1rem;
+  border-radius: var(--bs-border-radius-sm);
+}
+
+.num {
+  width: 40px;
+  display: inline-block;
+}
+
+.nav-tabs {
+  border-bottom: 2px solid black;
+}
+
+.nav-tabs > .nav-item {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.nav-tabs > .active > a {
+  border-bottom: none;
+  position: relative;
+  top: 2px;
+}
+
+.nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
+  border-left: 2px solid black;
+  border-top: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.nav-item > .need_review {
+  color: white;
+  background-color: #dc3545;
+}
+
+.nav-tabs .nav-link.active {
+  color: black;
+  background-color: #ffc107;
+}
+
+.nav-item > .reviewed {
+  color: white;
+  background-color: #198754;
+}
+
+.ui-datepicker, .datepicker-dropdown, .dropdown-menu, .table-condensed {
+  width: 350px;
+}
+
+.disabled-date {
+  color: red;
+  text-color: red;
+}
+{% endblock styles %}
+
+{% block javascriptEnd %}
+<script type="text/javascript" src="{% static 'javascript/patient_home.js' %}"></script>
+{% endblock javascriptEnd %}
+
+{% block content %}
+<nav hidden>
+  <ul class="pagination justify-content-center scrollable-div" id="legend">
+    <strong></strong>
+  </ul>
+</nav>
+
+<div class="modal fade" id="alertModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog ui-front" role="document">
+    <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
+      <div class="modal-body">
+        <div class="card border-dark mb-3">
+          <div class="card-header"></div>
+          <div class="card-body" id="alertModalBody">
+            <p id="alertMessage"></p>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button class="btn btn-sm btn-primary" data-dismiss="modal" onclick="$('#alertModal').modal('hide');">Cancel</button>
+            <button class="btn btn-sm btn-danger" id="confirmDeleteBtn">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="addPatient" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg ui-front" role="document">
+    <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
+      <div class="modal-body">
+        <div class="card border-dark mb-3">
+          <div class="card-header">
+            Modify Patient Detail
+            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="card-body" id="addPatientModalBody">
+            <div class="col-md-12">
+              <div id="div_id_patient" class="mb-3">
+                <label for="id_patient" class="form-label requiredField">
+                  Patient Name<span class="asteriskField">*</span>
+                </label>
+                <input type="text" name="patient" class="textinput form-control" required="" id="id_patient" value="{{patient.name}}" readonly>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div id="div_id_date_of_birth" class="mb-3">
+                  <label for="id_date_of_birth" class="form-label requiredField">
+                    Date of Birth<span class="asteriskField">*</span>
+                  </label>
+                  <input type="text" name="date_of_birth" tabindex="1" class="datepicker_dob form-control"
+                  data-date-format="dd/mm/yyyy" required="required" autocomplete="off" id="id_date_of_birth" value="{{patient.date_of_birth}}">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div id="div_id_phone_number" class="mb-3">
+                  <label for="id_phone_number" class="form-label requiredField">
+                    Phone Number<span class="asteriskField">*</span>
+                  </label>
+                  <input type="text" name="phone_number" class="textinput form-control" required="" id="id_phone_number" value="{{patient.phone_number}}" >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="$('#addPatient').modal('hide');">Close</button>
+            <button type="button" class="btn btn-success float-right" onclick="addPatientDetail();">Update Patient</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="patient_list" data-bs-toggle="tab" data-bs-target="#patient_tab">Patient Details</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="appointment_list" data-bs-toggle="tab" data-bs-target="#appointment_tab">Appointment(s)</button>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="patient_tab" role="tabpanel" aria-labelledby="patient_tab">
+    <div class="row">
+      <div class="col-12 border border-primary p-2 mb-2 border-5" id="patient_info_div">
+        <div id="patient_info">
+          <ul class="list-group">
+            <li class="list-group-item border border-dark">
+              <div class="row">
+                  <div class="col-4">
+                    <strong>Patient Name: </strong><span id="patient_info_name">{{patient.name}}</span>
+                  </div>
+                  <div class="col-5">
+                    <strong>Patient Age: </strong><span id="patient_info_age">{{patient.age}}</span>
+                  </div>
+                  <div class="col-2">
+                    <strong>Patient ID: </strong><span id="patient_info_id">{{patient.id}}</span>
+                  </div>
+                  <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPatient').modal('show')">
+                      <i class="fas fa-pencil"></i>
+                    </button>
+                  </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <br/>
+        <div id="patient_prescription">
+          <div class="row" id="prescription_cards"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="appointment_tab" role="tabpanel" aria-labelledby="appointment_tab">
+    <table class="table table-hover table-fixed table-sm table-success" id="appointment_table">
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align: middle;">Patient ID</th>
+          <th rowspan="2" style="vertical-align: middle;">Patient Name</th>
+          <th colspan="5" style="vertical-align: middle;" class="text-center">Appointment</th>
+        </tr>
+        <tr>
+          <th style="vertical-align: middle;">Date</th>
+          <th style="vertical-align: middle;">From</th>
+          <th style="vertical-align: middle;">To</th>
+          <th style="vertical-align: middle;">Status</th>
+          <th style="vertical-align: middle;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="appointment_tableBody">
+        {% for appointment in appointments %}
+        <tr class="appointment">
+          <td>{{appointment.patient_id}}</td>
+          <td>{{appointment.patient_name}}</td>
+          <td>
+            <span name="span_appointment_date_update">{{appointment.appointment_date}}</span>
+            <input type="text" name="id_appointment_date_update" autocomplete="off"
+              class="datepicker_single form-control" hidden value="{{appointment.appointment_date}}"></input>
+          </td>
+          <td>
+            <span name="span_appointment_from_time_update">{{appointment.appointment_from_time_str}}</span>
+            <input type="time" name="id_appointment_from_time_update"
+              class="form-control" hidden value="{{appointment.appointment_from_time}}"></input>
+          </td>
+          <td>
+            <span name="span_appointment_to_time_update">{{appointment.appointment_to_time_str}}</span>
+            <input type="time" name="id_appointment_to_time_update"
+              class="form-control" hidden value="{{appointment.appointment_to_time}}"></input>
+          </td>
+          <td>
+            <span name="span_appointment_status_update">{{appointment.appointment_status}}</span>
+          </td>
+          <td hidden name="id_appointment_id_update">{{appointment.appointment_id}}</td>
+          <td>
+            <button onclick="showAppointmentUpdateForm(this);" class="btn btn-sm btn-primary"
+              data-from_date_time="{{appointment.appointment_from_date_time}}"
+              data-to_date_time="{{appointment.appointment_to_date_time}}"
+              data-patient_id="{{appointment.patient_id}}"
+              data-appointment_id="{{appointment.appointment_id}}">Update</button>
+            <button onclick="confirmAppointmentDelete(this);" data-appointment_id="{{appointment.appointment_id}}" class="btn btn-sm btn-danger">Delete</button>
+            <button onclick="updateAppointmentRow(this);" class="btn btn-sm btn-success" hidden>Done</button>
+            <button onclick="cancelAppointmentUpdate(this);" class="btn btn-sm btn-secondary" hidden>Cancel</button>
+          </td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td colspan="2">
+            <span name="span_appointment_patient_insert">{{patient.name}}</span>
+            <input type="hidden" name="patient" autocomplete="off" class="textinput textInput form-control" id="id_appointment_patient_insert" value="{{patient.id}}">
+          </td>
+          <td>
+            <input type="text" id="id_appointment_date_insert" class="datepicker_single form-control" autocomplete="off">
+          </td>
+          <td>
+            <input type="time" id="id_appointment_from_time_insert" class="form-control">
+          </td>
+          <td>
+            <input type="time" id="id_appointment_to_time_insert" class="form-control">
+          </td>
+          <td colspan="2" class="text-center">
+            <button onclick="insertAppointmentRow(this);" class="btn btn-outline-primary">Insert Appointment</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+  <script type="application/javascript">
+    $(function(){
+      window.setInterval(patient_homeReload, 5 * 60 * 1000);
+      datepicker_operation({{unavailable|safe}});
+      populatePrescriptions({{prescriptions|safe}});
+      // populate_unavailable_tooltip();
+    });
+
+    function addPatientDetail() {
+      let patient_name = document.getElementById('id_patient').value;
+      let date_of_birth = document.getElementById('id_date_of_birth').value;
+      let phone_number = document.getElementById('id_phone_number').value;
+      $.ajax({
+        url : "{% url 'dataStorage:patient_operation' %}",
+        type : "PUT",
+        data : {
+          'patient_name': patient_name,
+          'date_of_birth': date_of_birth,
+          'phone_number': phone_number,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse, textMsg, xhr) {
+          notify_message(HttpResponse.message, 'success');
+          window.scrollTo(0, 0);
+          $('#addPatient').modal('hide');
+          patient_homeReload();
+          document.getElementById('id_patient').value = "";
+          document.getElementById('id_date_of_birth').value = "";
+          document.getElementById('id_phone_number').value = "";
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert('Please fill in all fields.');
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function insertAppointmentRow() {
+      let appointment_patient = document.getElementById('id_appointment_patient_insert').value;
+      let appointment_date = document.getElementById('id_appointment_date_insert').value;
+      let appointment_from_time = document.getElementById('id_appointment_from_time_insert').value;
+      let appointment_to_time = document.getElementById('id_appointment_to_time_insert').value;
+      $.ajax({
+        url : "{% url 'dataStorage:appointment_operation' %}",
+        type : "POST",
+        data : {
+          'appointment_patient': appointment_patient,
+          'appointment_date': appointment_date,
+          'appointment_from_time': appointment_from_time,
+          'appointment_to_time': appointment_to_time,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse,textMsg, xhr) {
+          window.scrollTo(0, 0);
+          patient_homeReload();
+          document.getElementById('id_appointment_patient_insert').value = "";
+          document.getElementById('id_appointment_date_insert').value = "";
+          document.getElementById('id_appointment_from_time_insert').value = "";
+          document.getElementById('id_appointment_to_time_insert').value = "";
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert('Please fill in all fields.');
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function updateAppointmentRow(button) {
+      let tableRow = button.parentNode.parentNode;
+      let appointment_date = tableRow.querySelector('[name="id_appointment_date_update"]').value;
+      let appointment_from_time = tableRow.querySelector('[name="id_appointment_from_time_update"]').value;
+      let appointment_to_time = tableRow.querySelector('[name="id_appointment_to_time_update"]').value;
+      let appointment_id = tableRow.querySelector('[name="id_appointment_id_update"]').innerText;
+
+      $.ajax({
+        url : "{% url 'dataStorage:appointment_operation' %}",
+        type : "PUT",
+        data : {
+          'appointment_date': appointment_date,
+          'appointment_from_time': appointment_from_time,
+          'appointment_to_time': appointment_to_time,
+          'appointment_id': appointment_id,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        },
+        success : function(HttpResponse,textMsg, xhr) {
+          window.scrollTo(0, 0);
+          patient_homeReload();
+        },
+        error : function(xhr, errmsg, err) {
+          console.log(xhr);
+          window.scrollTo(0, 0);
+          alert("Patient ID not found. Unable to update the row.");
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function patient_homeReload() {
+      $.ajax({
+          url : "{% url 'dataStorage:patient_home' %}",
+          type : "GET",
+          data : {},
+          beforeSend: function (xhr) {},
+          success : function(HttpResponse, textMsg, xhr) {
+            window.scrollTo(0, 0);
+            console.log(HttpResponse.data);
+            reloadElements(HttpResponse.data);
+          },
+          error : function(xhr, errmsg, err) {
+            window.scrollTo(0, 0);
+            location.reload();
+          },
+          statusCode: {
+            401: function() {
+              window.scrollTo(0, 0);
+              location.reload();
+            }
+          }
+      });
+    }
+
+    function deleteAppointmentRow(button) {
+      let appointment_id = button.getAttribute('data-appointment_id');
+      $.ajax({
+          url : "{% url 'dataStorage:appointment_operation' %}",
+          type : "DELETE",
+          data : {
+            'appointment_id': appointment_id,
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+          },
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+          },
+          success : function(HttpResponse,textMsg, xhr) {
+            window.scrollTo(0, 0);
+            patient_homeReload();
+            $('#alertModal').modal('hide');
+          },
+          error : function(xhr, errmsg, err) {
+            window.scrollTo(0, 0);
+            location.reload();
+          },
+          statusCode: {
+            401: function() {
+              window.scrollTo(0, 0);
+              location.reload();
+            }
+          }
+      });
+    }
+
+    function populatePrescriptions(prescriptions) {
+      let prescription_cardsEle = document.getElementById('prescription_cards');
+      let row = '';
+      let pres_url = "{% url 'dataStorage:prescription_operation' %}"
+      prescription_cardsEle.innerHTML = row;
+      prescriptions.forEach(prescription => {
+        row = row + `<div class="col-sm-3 mb-3 mb-sm-0">
+          <div class="card text-bg-primary mb-3" style="max-width: 18rem;">
+            <div class="card-header">`+prescription.name+`</div>
+            <div class="card-body text-center">
+              <div class="d-flex justify-content-between">
+                <a class="btn btn-sm btn-success float-begin" id="prescription_`+prescription.id+`"
+                href="`+pres_url+`?prescription_id=`+prescription.id+`" target="pres">View</a>
+                <button class="btn btn-sm btn-info float-end prescription_btn"
+                id="prescription_btn_`+prescription.id+`" data-prescription_id="`+prescription.id+`">Download</button>
+              </div>
+              <h5 class="card-title" hidden>Primary card title</h5>
+              <p class="card-text" hidden>Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>`;
+      });
+      prescription_cardsEle.innerHTML = row;
+      document.querySelectorAll(".prescription_btn").forEach(ele => {
+        ele.addEventListener("click", function() {
+          let prescription_id = ele.getAttribute("data-prescription_id");
+          $.ajax({
+            url : "{% url 'dataStorage:prescription_operation' %}",
+            type : "POST", // http method
+            data : {
+              'prescription_id': prescription_id,
+              'mode': 'download',
+              'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+            success : function(json,textMsg, xhr) {
+              var link = document.createElement("a");
+              link.download = json.filename;
+              link.href = json.fileURL;
+              link.target = "_blank";
+              link.click();
+            },
+            error : function(xhr, errmsg, err) {
+              window.scrollTo(0, 0);
+              location.reload();
+            },
+            statusCode: {
+              401: function() {
+                window.scrollTo(0, 0);
+                location.reload();
+              }
+            }
+          });
+        });
+      });
+    }
+  </script>
+{% endblock content %}

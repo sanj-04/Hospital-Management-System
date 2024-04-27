@@ -264,10 +264,15 @@ def appointment_operation(request):
 
     elif request.method == "POST" and request.is_ajax():
         appointment_patient = request.POST.get("appointment_patient")
-        try:
-            patientObj = Patient.objects.get(id = int(appointment_patient))
-        except ValueError as ve:
-            patientObj = Patient.objects.get(user__username = appointment_patient)
+        if not request.user.is_staff:
+            patientObj = Patient.objects.get(user = request.user)
+            doctor_info = None
+        else:
+            doctor_info = request.user.id
+            try:
+                patientObj = Patient.objects.get(id = int(appointment_patient))
+            except ValueError as ve:
+                patientObj = Patient.objects.get(user__username = appointment_patient)
         
         appointment_date = request.POST.get("appointment_date")
         appointment_from_time = request.POST.get("appointment_from_time")
@@ -290,7 +295,7 @@ def appointment_operation(request):
 
         response = book_appointment(
             patient_info=patientObj.id,
-            doctor_info=request.user.id,
+            doctor_info=doctor_info,
             appointment_date=appointment_dateObj.strftime("%d-%m-%Y"),
             appointment_from_time=appointment_from_timeObj.strftime("%I:%M %p"),
             appointment_to_time=appointment_to_timeObj.strftime("%I:%M %p"),
@@ -316,6 +321,17 @@ def appointment_operation(request):
 
     elif request.method == "PUT" and request.is_ajax():
         appointment_id = QueryDict(request.body).get("appointment_id")
+        if not request.user.is_staff:
+            appointment_idList = Appointment.objects.filter(
+                patient__user = request.user
+            ).values_list("id", flat=True)
+            if int(appointment_id) not in appointment_idList:
+                return JsonResponse(
+                    {
+                        "message": f"Failed to Update Appointment {appointment_id} by {request.user.username}",
+                    },
+                    status=404,
+                )
         appointment_date = QueryDict(request.body).get("appointment_date")
         appointment_from_time = QueryDict(request.body).get("appointment_from_time")
         appointment_to_time = QueryDict(request.body).get("appointment_to_time")
@@ -341,6 +357,17 @@ def appointment_operation(request):
 
     elif request.method == "DELETE" and request.is_ajax():
         appointment_id = QueryDict(request.body).get("appointment_id")
+        if not request.user.is_staff:
+            appointment_idList = Appointment.objects.filter(
+                patient__user = request.user
+            ).values_list("id", flat=True)
+            if int(appointment_id) not in appointment_idList:
+                return JsonResponse(
+                    {
+                        "message": f"Failed to Delete Appointment {appointment_id} by {request.user.username}",
+                    },
+                    status=404,
+                )
         appointmentObj = Appointment.objects.get(id = appointment_id)
         appointmentObj.delete()
         return JsonResponse(
