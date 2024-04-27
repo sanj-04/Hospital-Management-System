@@ -170,11 +170,111 @@ def bot_chat(request):
         request_next_option = request.session.get("next_action")
         request_content = request.POST.get("content")
 
-        # print(f"{request_selected_option=}")
-        # print(f"{request_next_option=}")
-        # print(f"{request_content=}")
+        print(f"{request_selected_option=}")
+        print(f"{request_next_option=}")
+        print(f"{request_content=}")
 
-        if request_selected_option == "register" or request_content.lower() == "register" or request_next_option == "register":
+        if request_selected_option == "reschedule_appointment" or request_content.lower() == "reschedule appointment":
+            appointmentObjs = Appointment.objects.filter(
+                patient_id = request.session.get("patient_id"),
+            ).order_by("appointment_date")
+            
+            if appointmentObjs.count() == 0:
+                response = ["No Appointment(s)."]
+                options = list(mappings.get("home").get("options").values())
+                request.session["next_action"] = None
+            else:
+                response = ["Select a Appointment to be Reschedule."]
+                options = [{
+                    "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": appointmentObj.id,
+                } for appointmentObj in appointmentObjs]
+                options.append({
+                    "text": "Home",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": "home",
+                })
+                request.session["next_action"] = "reschedule_appointment_book"
+
+        elif request_next_option == "reschedule_appointment_book":
+            request.session["reschedule_appointment_id"] = request_selected_option
+            response = ["Provide New Appointment Date in DD-MM-YYYY format."]
+            request.session["next_action"] = "reschedule_appointment_book_slot"
+
+        elif request_next_option == "reschedule_appointment_book_slot":
+            from dataStorage.views import book_appointment
+            response_data = book_appointment(
+                patient_info=request.session.get("patient_id"),
+                doctor_info=None,
+                appointment_date=request_content,
+            )
+            response_message = response_data.get("message")
+            response_created = response_data.get("created")
+            response_available = response_data.get("available")
+            available_slots = response_data.get("available_slots")
+
+            if response_data.get("available", False):
+                options = []
+                for available_slot in available_slots:
+                    options.append({
+                        "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                    })
+                options.append({
+                    "text": "Home",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": "home",
+                })
+                response = [response_message, *mappings.get("book_appointment_slots").get("title")]
+                request.session["next_action"] = "reschedule_appointment_book_with_slot"
+            else:
+                options = []
+                response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                request.session["next_action"] = "reschedule_appointment_book"
+        
+        elif request_next_option == "reschedule_appointment_book_with_slot":
+            from_slot, to_slot = request_selected_option.replace("_", " ").split("-")
+            from dataStorage.views import book_appointment
+            response_data = book_appointment(
+                patient_info=request.session.get("patient_id"),
+                doctor_info=None,
+                appointment_date=request_content,
+                appointment_from_time=from_slot,
+                appointment_to_time=to_slot,
+            )
+            response_message = response_data.get("message")
+            if response_data.get("created"):
+                response = [response_message, *mappings.get("book_appointment_complete").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
+                options = list(mappings.get("home").get("options").values())
+                Appointment.objects.get(
+                    id = request.session.get("reschedule_appointment_id"),
+                ).delete()
+            else:
+                if response_data.get("available", False):
+                    response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
+                    request.session["next_action"] = "reschedule_appointment_book_with_slot"
+                    available_slots = response_data.get("available_slots")
+                    options = []
+                    for available_slot in available_slots:
+                        options.append({
+                            "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                            "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                            "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                        })
+                    options.append({
+                        "text": "Home",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": "home",
+                    })
+                else:
+                    response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                    request.session["next_action"] = "reschedule_appointment_book"
+                    options = []
+
+        elif request_selected_option == "register" or request_content.lower() == "register" or request_next_option == "register":
             request.session["patient_id"] = None
             request.session["patient_name"] = None
             request.session["register_patient_name"] = None
