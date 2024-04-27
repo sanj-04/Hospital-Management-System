@@ -468,8 +468,8 @@
     function processPrescription() {
       let patient_id = document.getElementById('patient_info_id').innerText;
       $.ajax({
-        url : "{% url 'dataStorage:patient_operation' %}",
-        type : "PUT",
+        url : "{% url 'dataStorage:prescription_operation' %}",
+        type : "POST",
         data : {
           'patient_id': patient_id,
           'prescription': createPrescription(),

@@ -2,10 +2,18 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import get_template
-from dataStorage.models import Prescription
+from dataStorage.models import Prescription, Doctor, Patient
 from main.settings import MEDIA_ROOT as media_root
 from main.settings import STATICFILES_DIRS as staticfile_dirs
-import qrcode, io, base64, os
+import qrcode, io, base64, os, json
+from datetime import datetime
+import hashlib
+
+
+def hash_dict_content(dictionary):
+    json_string = json.dumps(dictionary, sort_keys=True)
+    hash_object = hashlib.sha256(json_string.encode())
+    return hash_object.hexdigest()
 
 from django.http import HttpResponse
 # from django_wkhtmltopdf.views import PDFTemplateView
@@ -129,3 +137,29 @@ def prescription_operation(request):
     #     mode = request.POST.get("mode")
     #     # return process_prescription(prescription_id, request=request, mode="view")
     #     return process_prescription(prescription_id, request=request, mode=mode)
+
+    elif request.method == "POST" and request.is_ajax():
+        patient_id = request.POST.get("patient_id")
+        prescription = request.POST.get("prescription")
+
+        doctorObj = Doctor.objects.get(user_id=request.user.id)
+        patientObj = Patient.objects.get(id=int(patient_id))
+        prescription_dict = {}
+        prescription_dict["medicines"] = json.loads(prescription)
+        prescription_dict["doctor_name"] = doctorObj.user.username
+        prescription_dict["patient_name"] = patientObj.user.username
+        prescription_dict["date_time"] = datetime.now().strftime("%d-%b-%Y %I:%M %p")
+        
+        prescriptionObj = Prescription.objects.create(
+            prescription_hash=hash_dict_content(prescription_dict),
+            prescription_json=prescription_dict,
+            doctor=doctorObj,
+            patient=patientObj,
+        )
+        return JsonResponse(
+            {
+                "message": f"Added Prescription of {patient_id} by {request.user.username}",
+                "prescription_id": prescriptionObj.id,
+            },
+            status=200,
+        )
