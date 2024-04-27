@@ -252,8 +252,8 @@
           <td>{{appointment.patient_name}}</td>
           <td>
             <span name="span_appointment_date_update">{{appointment.appointment_date}}</span>
-            <input type="text" name="id_appointment_date_update"
-              class="datepicker_single datepicker form-control" hidden value="{{appointment.appointment_date}}"></input>
+            <input type="text" name="id_appointment_date_update" autocomplete="off"
+              class="datepicker_single form-control" hidden value="{{appointment.appointment_date}}"></input>
           </td>
           <td>
             <span name="span_appointment_from_time_update">{{appointment.appointment_from_time_str}}</span>
@@ -291,7 +291,7 @@
             <input type="text" name="patient" autocomplete="off" class="textinput textInput form-control" id="id_appointment_patient_insert" list="id_patients_list">
           </td>
           <td>
-            <input type="text" id="id_appointment_date_insert" class="datepicker_single datepicker form-control">
+            <input type="text" id="id_appointment_date_insert" class="datepicker_single form-control"  autocomplete="off">
           </td>
           <td>
             <input type="time" id="id_appointment_from_time_insert" class="form-control">
