@@ -50,7 +50,7 @@
 		onClosed: null,
         onClick: null,
 		icon_type: 'class',
-		template: '<div data-notify="container" class="col-xs-11 col-sm-4 alert alert-{0}" role="alert">'+
+		template: '<div data-notify="container" class="col-xs-11 col-sm-7 alert alert-{0}" role="alert">'+
 		'<button type="button" aria-hidden="true" class="btn-close close py-1" data-notify="dismiss"></button>'+
 		'<span data-notify="icon"></span>'+
 		'<span data-notify="title">'+
