@@ -13,7 +13,7 @@ def patient_home(request):
     if request.user.is_staff:
         return redirect('dataStorage:home')
 
-    if request.method == "GET":
+    if request.method == "GET" and not request.user.is_staff:
         patientObj = Patient.objects.get(user = request.user)
         current_datetime = datetime.now()
         appointmentObjs = Appointment.objects.filter(
@@ -78,7 +78,7 @@ def patient_home(request):
 
 @login_required
 def patient_operation(request):
-    if request.method == "GET" and request.is_ajax():
+    if request.method == "GET" and request.is_ajax() and request.user.is_staff:
         patient_id = request.GET.get("patient_id")
         prescriptionObjs = Prescription.objects.filter(patient_id=patient_id)
         prescriptions = [
@@ -97,7 +97,7 @@ def patient_operation(request):
             status=200,
         )
 
-    elif request.method == "POST" and request.is_ajax():
+    elif request.method == "POST" and request.is_ajax() and request.user.is_staff:
         patient_name = request.POST.get("patient_name")
         date_of_birth = request.POST.get("date_of_birth")
         date_of_birthObj = datetime.strptime(date_of_birth, "%d-%b-%Y")  # "%Y-%m-%d"
@@ -134,7 +134,7 @@ def patient_operation(request):
             status=404,
         )
 
-    elif request.method == "PUT" and request.is_ajax():
+    elif request.method == "PUT" and request.is_ajax() and not request.user.is_staff:
         try:
             patient_name = QueryDict(request.body).get("patient_name")
             date_of_birth = QueryDict(request.body).get("date_of_birth")

@@ -144,7 +144,7 @@ def prescription_operation(request):
     #     # return process_prescription(prescription_id, request=request, mode="view")
     #     return process_prescription(prescription_id, request=request, mode=mode)
 
-    elif request.method == "POST" and request.is_ajax():
+    elif request.method == "POST" and request.is_ajax() and request.user.is_staff:
         patient_id = request.POST.get("patient_id")
         prescription = request.POST.get("prescription")
 

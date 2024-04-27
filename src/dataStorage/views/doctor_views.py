@@ -13,7 +13,7 @@ def doctor_home(request):
     if not request.user.is_staff:
         return redirect('dataStorage:home')
 
-    if request.method == "GET":
+    if request.method == "GET" and request.user.is_staff:
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
         scheduleObjs = Schedule.objects.filter(doctor_id=request.user.id)

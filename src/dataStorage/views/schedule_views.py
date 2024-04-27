@@ -7,7 +7,7 @@ from datetime import datetime
 
 @login_required
 def schedule_operation(request):
-    if request.method == "POST" and request.is_ajax():
+    if request.method == "POST" and request.is_ajax() and request.user.is_staff:
         schedule_month = request.POST.get("schedule_month")
         schedule_monthObj = datetime.strptime(schedule_month, "%Y-%m")
         schedule_exists = Schedule.objects.filter(schedule_month_year = schedule_monthObj).exists()
@@ -44,7 +44,7 @@ def schedule_operation(request):
             status=200,
         )
 
-    elif request.method == "PUT" and request.is_ajax():
+    elif request.method == "PUT" and request.is_ajax() and request.user.is_staff:
         schedule_id = QueryDict(request.body).get("schedule_id")
         unavailable_count = QueryDict(request.body).get("unavailable_count").split(",")
         schedule_status = QueryDict(request.body).get("schedule_status")
@@ -79,7 +79,7 @@ def schedule_operation(request):
             status=200,
         )
 
-    elif request.method == "DELETE" and request.is_ajax():
+    elif request.method == "DELETE" and request.is_ajax() and request.user.is_staff:
         schedule_id = QueryDict(request.body).get("schedule_id")
         scheduleObj = Schedule.objects.get(id=schedule_id)
         scheduleObj.delete()
