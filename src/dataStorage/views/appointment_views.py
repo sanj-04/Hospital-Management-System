@@ -108,14 +108,14 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
     available_toObj = datetime.strptime(available_to, "%I:%M %p").time()
     available_slot_count = available_settings[appointment_weekday]['slot_count']
     available_duration = available_settings[appointment_weekday]['duration']
-    print(f"{available_from=}, {available_to=}, {available_slot_count=}, {available_duration=}")
+    # print(f"{available_from=}, {available_to=}, {available_slot_count=}, {available_duration=}")
     available_fromObj_list, available_toObj_list, slotObjs, slots_index = create_time_objects(
         appointment_dateObj,
         available_fromObj,
         available_toObj,
         available_duration
     )
-    print(f"{available_fromObj_list=}, {available_toObj_list=}, {slotObjs=}")
+    # print(f"{available_fromObj_list=}, {available_toObj_list=}, {slotObjs=}")
     appointmentObjs = Appointment.objects.filter(
         appointment_date = appointment_dateObj.date(),
     )
@@ -137,13 +137,13 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
         #         available_fromObj_list.pop(index)
         #         del slotObjs[index]
 
-        print(f"{slotObjs=}")
+        # print(f"{slotObjs=}")
         for appointmentObj in appointmentObjs:
-            print(f"{appointmentObj.slot_index=}, {type(appointmentObj.slot_index)=}")
-            print(f"{slotObjs[appointmentObj.slot_index]=}")
+            # print(f"{appointmentObj.slot_index=}, {type(appointmentObj.slot_index)=}")
+            # print(f"{slotObjs[appointmentObj.slot_index]=}")
             del slotObjs[appointmentObj.slot_index]
 
-        print(f"{slotObjs=}")
+        # print(f"{slotObjs=}")
         
         # available_from_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_fromObj_list]
         # available_to_slots = [timeObj.strftime("%I:%M %p") for timeObj in available_toObj_list]
@@ -153,7 +153,7 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
             "slot_index": slotObj.get("slot_index"),
         } for slotObj in slotObjs.values()]
 
-        print(f"{available_slots=}")
+        # print(f"{available_slots=}")
         if appointment_from_time is None or appointment_to_time is None:
             return {
                 "message": f"Available Slot(s) on {appointment_dateObj.strftime("%d-%B-%Y")}.",
@@ -166,7 +166,7 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
         
         appointment_fromObj = datetime.strptime(appointment_from_time, "%I:%M %p").time()
         appointment_toObj = datetime.strptime(appointment_to_time, "%I:%M %p").time()
-        print(f"{slots_index[appointment_fromObj]=}, {slots_index[appointment_fromObj].get("slot_index")=}")
+        # print(f"{slots_index[appointment_fromObj]=}, {slots_index[appointment_fromObj].get("slot_index")=}")
         # print(f"{slots_index[appointment_toObj]=}, {slots_index[appointment_toObj].get("slot_index")=}")
         try:
             appointmentObj = Appointment.objects.create(
@@ -300,7 +300,7 @@ def appointment_operation(request):
             appointment_from_time=appointment_from_timeObj.strftime("%I:%M %p"),
             appointment_to_time=appointment_to_timeObj.strftime("%I:%M %p"),
         )
-        print(f"{response=}")
+        # print(f"{response=}")
         if response.get("created"):
             appointment_id = response.get("appointment_id")
             appointmentObj = response.get("appointmentObj")
@@ -309,12 +309,14 @@ def appointment_operation(request):
             return JsonResponse(
                 {
                     "message": f"Created Appointment {appointmentObj.id} by {request.user.username}",
+                    "res_message": response.get("message").split(",")[0],
                 },
                 status=200,
             )
         return JsonResponse(
             {
                 "message": f"Failed to Create Appointment.",
+                "res_message": response.get("message"),
             },
             status=404,
         )

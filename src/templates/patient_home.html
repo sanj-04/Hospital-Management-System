@@ -338,6 +338,7 @@
         },
         success : function(HttpResponse,textMsg, xhr) {
           window.scrollTo(0, 0);
+          notify_message(HttpResponse.res_message, 'info');
           patient_homeReload();
           document.getElementById('id_appointment_patient_insert').value = "";
           document.getElementById('id_appointment_date_insert').value = "";
@@ -347,7 +348,11 @@
         error : function(xhr, errmsg, err) {
           console.log(xhr);
           window.scrollTo(0, 0);
-          alert('Please fill in all fields.');
+          try {
+            notify_message(xhr.responseJSON.res_message, 'danger');
+          } catch (error) {
+            alert('Please fill in all fields.');
+          }
         },
         statusCode: {
           401: function() {
