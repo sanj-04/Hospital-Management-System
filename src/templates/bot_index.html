@@ -24,6 +24,8 @@
   </ul>
   <div class="chat-input">
     <textarea placeholder="Enter a message..." spellcheck="false" required style="background-color: #f0f0f0; color: #000000;"></textarea>
+    <input type="text" hidden autocomplete="off" placeholder="Enter a message..." spellcheck="false" required
+      style="background-color: #f0f0f0; color: #000000;"  class="datepicker_chat form-control"></input>
     <span id="send-btn" class="material-symbols-rounded">send</span>
   </div>
 </div>
@@ -33,6 +35,15 @@
     window.ApiKey = '';
     window.CsrfToken = '{{ csrf_token }}';
     window.ApiUrl = "{% url 'dataStorage:bot_chat' %}";
+
+    $('.datepicker_chat').datepicker({
+      format: 'dd-M-yyyy',
+      autoclose: true,
+      monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+      monthNamesShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      weekStart: 0,
+      calendarWeeks: true,
+    });
 
     let incomingChatBtn = createChatBtn(
       "Login",

@@ -236,7 +236,7 @@ def bot_chat(request):
                 patientObj = Patient.objects.get(user__username = request_content)
                 response = [
                     "User with name already Exists, Try different Name.",
-                    *mappings.get("register").get("title")
+                    *mappings.get("register").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("register").get("next_action")
             except Patient.DoesNotExist as err:
@@ -256,7 +256,7 @@ def bot_chat(request):
                 print(f"{err=}")
                 request.session["register_patient_dob"] = None
                 response = [
-                    "Enter Date of Birth is Invalid.",
+                    "Entered Date of Birth is Invalid.",
                     *mappings.get("register_dob").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("register_dob").get("next_action")
@@ -378,12 +378,18 @@ def bot_chat(request):
             )
             response_message = response_data.get("message")
             if response_data.get("created"):
-                response = [response_message, *mappings.get("book_appointment_complete").get("title")]
+                response = [
+                    response_message,
+                    *mappings.get("book_appointment_complete").get("title"),
+                ]
                 request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
                 options = list(mappings.get("home").get("options").values())
             else:
                 if response_data.get("available", False):
-                    response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
+                    response = [
+                        response_message,
+                        *mappings.get("book_appointment_slot_error").get("title"),
+                    ]
                     request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
                     available_slots = response_data.get("available_slots", [])
                     options = []
@@ -399,7 +405,10 @@ def bot_chat(request):
                         "option_id": "home",
                     })
                 else:
-                    response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                    response = [
+                        response_message,
+                        *mappings.get("book_appointment_unaviable").get("title"),
+                    ]
                     request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
                     options = []
 
@@ -532,11 +541,17 @@ def bot_chat(request):
                     "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
                     "option_id": "home",
                 })
-                response = [response_message, *mappings.get("book_appointment_slots").get("title")]
+                response = [
+                    response_message,
+                    *mappings.get("book_appointment_slots").get("title"),
+                ]
                 request.session["next_action"] = "reschedule_appointment_book_with_slot"
             else:
                 options = []
-                response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                response = [
+                    response_message,
+                    *mappings.get("book_appointment_unaviable").get("title"),
+                ]
                 request.session["next_action"] = "reschedule_appointment_book"
         
         elif request_next_option == "reschedule_appointment_book_with_slot":
