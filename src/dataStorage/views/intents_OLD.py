@@ -66,7 +66,7 @@ mappings = {
       "Provide your Name or ID.",
     ],
     "options": {},
-    "next_action": "login",
+    "next_action": "home",
   },
 
   "home": {
@@ -85,15 +85,15 @@ mappings = {
         "class_list": "chat_option btn btn-sm btn-outline-info m-2",
         "option_id": "view_appointment",
       },
-      "cancel_appointment": {
-        "text": "Cancel Appointment",
-        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-        "option_id": "cancel_appointment",
-      },
       "reschedule_appointment": {
         "text": "Reschedule Appointment",
         "class_list": "chat_option btn btn-sm btn-outline-info m-2",
         "option_id": "reschedule_appointment",
+      },
+      "cancel_appointment": {
+        "text": "Cancel Appointment",
+        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+        "option_id": "cancel_appointment",
       },
       "logout": {
         "text": "Logout",
@@ -150,12 +150,12 @@ mappings = {
       "Successfully Logout out.",
     ],
     "options": {
-      "login": {
+      "logout": {
         "text": "Login",
         "class_list": "chat_option btn btn-sm btn-outline-info m-2 float-end",
         "option_id": "login",
       },
     },
-    "next_action": "login",
+    "next_action": "home",
   },
 }

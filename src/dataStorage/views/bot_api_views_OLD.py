@@ -170,290 +170,11 @@ def bot_chat(request):
         request_next_option = request.session.get("next_action")
         request_content = request.POST.get("content")
 
-        # print(f"{request_selected_option=}")
-        # print(f"{request_next_option=}")
-        # print(f"{request_content=}")
+        print(f"{request_selected_option=}")
+        print(f"{request_next_option=}")
+        print(f"{request_content=}")
 
-        if request_selected_option == "login" or request_content.lower() == "login":
-            request.session["patient_id"] = None
-            request.session["patient_name"] = None
-            del request.session["patient_id"]
-            del request.session["patient_name"]
-            response = mappings.get("login").get("title")
-            request.session["next_action"] = mappings.get("login").get("next_action")
-
-        elif request_selected_option == "home":
-            request.session["next_action"] = None
-            if request.session.get("patient_id"):
-                response = ["Select a Operation."]
-                options = list(mappings.get("home").get("options").values())
-            else:
-                response = ["Please login."]
-                options = None
-
-        elif request_next_option == "home":
-            try:
-                patientObj = Patient.objects.get(id = int(request_content))
-                options, response = login_success(request, patientObj)
-            except Patient.DoesNotExist as err:
-                response = login_falied(request)
-            except ValueError as ve:
-                try:
-                    patientObj = Patient.objects.get(user__username = request_content)
-                    options, response = login_success(request, patientObj)
-                except Patient.DoesNotExist as err:
-                    response = login_falied(request)
-
-        elif request_selected_option == "logout" or request_content.lower() == "logout":
-            request.session["patient_id"] = None
-            request.session["patient_name"] = None
-            del request.session["patient_id"]
-            del request.session["patient_name"]
-            response = mappings.get("logout").get("title")
-            request.session["next_action"] = mappings.get("login").get("next_action")
-            options = list(mappings.get("logout").get("options").values())
-        
-        elif request_selected_option == "register" or request_content.lower() == "register":
-            request.session["patient_id"] = None
-            request.session["patient_name"] = None
-            request.session["register_patient_name"] = None
-            request.session["register_patient_phone"] = None
-            request.session["register_patient_dob"] = None
-            request.session["reschedule_appointment_id"] = None
-            del request.session["patient_id"]
-            del request.session["patient_name"]
-            del request.session["register_patient_name"]
-            del request.session["register_patient_phone"]
-            del request.session["register_patient_dob"]
-            del request.session["reschedule_appointment_id"]
-            response = mappings.get("register").get("title")
-            request.session["next_action"] = mappings.get("register").get("next_action")
-            
-        elif request_next_option == "register_dob":
-            request.session["register_patient_name"] = None
-            del request.session["register_patient_name"]
-            try:
-                patientObj = Patient.objects.get(user__username = request_content)
-                response = [
-                    "User with name already Exists, Try different Name.",
-                    *mappings.get("register").get("title")
-                ]
-                request.session["next_action"] = mappings.get("register").get("next_action")
-            except Patient.DoesNotExist as err:
-                request.session["register_patient_name"] = request_content
-                response = mappings.get("register_dob").get("title")
-                request.session["next_action"] = mappings.get("register_dob").get("next_action")
-
-        elif request_next_option == "register_phone" and request.session.get("register_patient_name"):
-            request.session["register_patient_dob"] = None
-            del request.session["register_patient_dob"]
-            try:
-                patient_dobObj = datetime.strptime(request_content, "%d-%m-%Y")
-                request.session["register_patient_dob"] = request_content
-                response = mappings.get("register_phone").get("title")
-                request.session["next_action"] = mappings.get("register_phone").get("next_action")
-            except Exception as err:
-                print(f"{err=}")
-                request.session["register_patient_dob"] = None
-                response = [
-                    "Enter Date of Birth is Invalid.",
-                    *mappings.get("register_dob").get("title"),
-                ]
-                request.session["next_action"] = mappings.get("register_dob").get("next_action")
-
-        elif request_next_option == "register_check" and request.session.get("register_patient_dob"):
-            try:
-                patientObj = Patient.objects.get(phone_number = request_content)
-                response = [
-                    "User with phone number already Exists, Try different Phone Number.",
-                    *mappings.get("register_phone").get("title"),
-                ]
-                request.session["next_action"] = mappings.get("register_dob").get("next_action")
-            except Patient.DoesNotExist as err:
-                request.session["register_patient_phone"] = request_content
-                try:
-                    date_of_birthObj = datetime.strptime(
-                        request.session.get("register_patient_dob"),
-                        "%d-%m-%Y"
-                    )  # "%Y-%m-%d"
-                    try:
-                        userObj = User.objects.get(
-                            username = request.session.get("register_patient_name")
-                        )
-                    except User.DoesNotExist as e:
-                        userObj = User.objects.create_user(
-                            username = request.session.get("register_patient_name"),
-                            email = None,
-                            password = request.session.get("register_patient_phone"),
-                        )
-                        userObj.save()
-                    try:
-                        patientObj = Patient.objects.get(user_id=userObj.id)
-                        request.session["register_patient_name"] = None
-                        request.session["register_patient_phone"] = None
-                        request.session["register_patient_dob"] = None
-                        del request.session["register_patient_name"]
-                        del request.session["register_patient_phone"]
-                        del request.session["register_patient_dob"]
-                        response = mappings.get("register_failed").get("title")
-                        request.session["next_action"] = mappings.get("register_failed").get("next_action")
-                        options = list(mappings.get("register_failed").get("options").values())
-                    except Patient.DoesNotExist:
-                        patientObj = Patient.objects.create(
-                            user_id=userObj.id,
-                            date_of_birth=date_of_birthObj.date(),
-                            phone_number=request.session.get("register_patient_phone"),
-                        )
-                        response = mappings.get("register_success").get("title")
-                        request.session["next_action"] = mappings.get("register_success").get("next_action")
-                        options = list(mappings.get("register_success").get("options").values())
-                        request.session["register_patient_name"] = None
-                        request.session["register_patient_phone"] = None
-                        request.session["register_patient_dob"] = None
-                        del request.session["register_patient_name"]
-                        del request.session["register_patient_phone"]
-                        del request.session["register_patient_dob"]
-                except Exception as err:
-                    request.session["register_patient_name"] = None
-                    request.session["register_patient_phone"] = None
-                    request.session["register_patient_dob"] = None
-                    del request.session["register_patient_name"]
-                    del request.session["register_patient_phone"]
-                    del request.session["register_patient_dob"]
-                    response = mappings.get("register_failed").get("title")
-                    request.session["next_action"] = mappings.get("register_failed").get("next_action")
-                    options = list(mappings.get("register_failed").get("options").values())
-
-        elif (request_selected_option == "book_appointment" or request_next_option == "book_appointment") and request.session.get("patient_id"):
-            response = mappings.get("book_appointment").get("title")
-            request.session["next_action"] = mappings.get("book_appointment").get("next_action")
-
-        elif request_next_option == "book_appointment_slots" and request.session.get("patient_id"):
-            from dataStorage.views import book_appointment
-            response_data = book_appointment(
-                patient_info=request.session.get("patient_id"),
-                doctor_info=None,
-                appointment_date=request_content,
-            )
-            response_message = response_data.get("message")
-            response_created = response_data.get("created")
-            response_available = response_data.get("available")
-            available_slots = response_data.get("available_slots", [])
-
-            if response_data.get("available", False):
-                options = []
-                for available_slot in available_slots:
-                    options.append({
-                        "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
-                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                        "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
-                    })
-                options.append({
-                    "text": "Home",
-                    "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
-                    "option_id": "home",
-                })
-                response = [
-                    response_message,
-                    *mappings.get("book_appointment_slots").get("title"),
-                ]
-                request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
-            else:
-                options = []
-                response = [
-                    response_message,
-                    *mappings.get("book_appointment_unaviable").get("title"),
-                ]
-                request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
-        
-        elif request_next_option == "book_appointment_with_slot" and request.session.get("patient_id"):
-            from_slot, to_slot = request_selected_option.replace("_", " ").split("-")
-            from dataStorage.views import book_appointment
-            response_data = book_appointment(
-                patient_info=request.session.get("patient_id"),
-                doctor_info=None,
-                appointment_date=request_content,
-                appointment_from_time=from_slot,
-                appointment_to_time=to_slot,
-            )
-            response_message = response_data.get("message")
-            if response_data.get("created"):
-                response = [response_message, *mappings.get("book_appointment_complete").get("title")]
-                request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
-                options = list(mappings.get("home").get("options").values())
-            else:
-                if response_data.get("available", False):
-                    response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
-                    request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
-                    available_slots = response_data.get("available_slots", [])
-                    options = []
-                    for available_slot in available_slots:
-                        options.append({
-                            "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
-                            "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                            "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
-                        })
-                    options.append({
-                        "text": "Home",
-                        "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
-                        "option_id": "home",
-                    })
-                else:
-                    response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
-                    request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
-                    options = []
-
-        elif request_selected_option == "view_appointment" and request.session.get("patient_id"):
-            appointmentObjs = Appointment.objects.filter(
-                patient_id = request.session.get("patient_id"),
-                status = "Active",
-            ).order_by("appointment_date")
-            response = [f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}" for appointmentObj in appointmentObjs]
-            if appointmentObjs.count() == 0:
-                response = ["No Appointment(s)."]
-            options = list(mappings.get("home").get("options").values())
-            request.session["next_action"] = None
-
-        elif request_selected_option == "cancel_appointment" and request.session.get("patient_id"):
-            appointmentObjs = Appointment.objects.filter(
-                patient_id = request.session.get("patient_id"),
-                status = "Active",
-            ).order_by("appointment_date")
-            options = []
-            if appointmentObjs.count() == 0:
-                request.session["next_action"] = None
-                response = ["No Appointment(s)."]
-                options = list(mappings.get("home").get("options").values())
-            else:
-                request.session["next_action"] = "cancel_appointment_selected"
-                response = ["Select a Appointment to Cancel."]
-                for appointmentObj in appointmentObjs:
-                    options.append({
-                        "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
-                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                        "option_id": f"{appointmentObj.id}",
-                    })
-                options.append({
-                    "text": "Home",
-                    "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
-                    "option_id": "home",
-                })
-        
-        elif request_next_option == "cancel_appointment_selected" and request.session.get("patient_id"):
-            appointmentObj = Appointment.objects.get(id = request_selected_option)
-            if appointmentObj.patient_id == request.session.get("patient_id"):
-                # appointmentObj.status = "Canceled"
-                # appointmentObj.save()
-                appointmentObj.delete()
-                response = ["Appointment Canceled."]
-            else:
-                response = ["Failed to Cancel Appointment."]
-            options = list(mappings.get("home").get("options").values())
-            request.session["next_action"] = None
-
-        elif (request_selected_option == "reschedule_appointment" or request_content.lower() == "reschedule appointment") and request.session.get("patient_id"):
-            request.session["reschedule_appointment_id"] = None
-            del request.session["reschedule_appointment_id"]
+        if request_selected_option == "reschedule_appointment" or request_content.lower() == "reschedule appointment":
             appointmentObjs = Appointment.objects.filter(
                 patient_id = request.session.get("patient_id"),
             ).order_by("appointment_date")
@@ -471,43 +192,17 @@ def bot_chat(request):
                 } for appointmentObj in appointmentObjs]
                 options.append({
                     "text": "Home",
-                    "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
                     "option_id": "home",
                 })
                 request.session["next_action"] = "reschedule_appointment_book"
 
-        elif (request_selected_option == "reschedule_appointment_book" or request_next_option == "reschedule_appointment_book") and request.session.get("patient_id"):
-            appointment_idList = Appointment.objects.filter(
-                patient_id = request.session.get("patient_id")
-            ).values_list("id", flat=True)
-            if int(request_selected_option) not in appointment_idList:
-                appointmentObjs = Appointment.objects.filter(
-                    patient_id = request.session.get("patient_id"),
-                ).order_by("appointment_date")
-                
-                if appointmentObjs.count() == 0:
-                    response = ["No Appointment(s)."]
-                    options = list(mappings.get("home").get("options").values())
-                    request.session["next_action"] = None
-                else:
-                    response = ["Select a Appointment to be Reschedule."]
-                    options = [{
-                        "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
-                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
-                        "option_id": appointmentObj.id,
-                    } for appointmentObj in appointmentObjs]
-                    options.append({
-                        "text": "Home",
-                        "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
-                        "option_id": "home",
-                    })
-                    request.session["next_action"] = "reschedule_appointment_book"
-            else:
-                request.session["reschedule_appointment_id"] = request_selected_option
-                response = ["Provide New Appointment Date in DD-MM-YYYY format."]
-                request.session["next_action"] = "reschedule_appointment_book_slot"
+        elif request_next_option == "reschedule_appointment_book":
+            request.session["reschedule_appointment_id"] = request_selected_option
+            response = ["Provide New Appointment Date in DD-MM-YYYY format."]
+            request.session["next_action"] = "reschedule_appointment_book_slot"
 
-        elif request_next_option == "reschedule_appointment_book_slot" and request.session.get("patient_id"):
+        elif request_next_option == "reschedule_appointment_book_slot":
             from dataStorage.views import book_appointment
             response_data = book_appointment(
                 patient_info=request.session.get("patient_id"),
@@ -515,9 +210,9 @@ def bot_chat(request):
                 appointment_date=request_content,
             )
             response_message = response_data.get("message")
-            # response_created = response_data.get("created")
-            # response_available = response_data.get("available")
-            available_slots = response_data.get("available_slots", [])
+            response_created = response_data.get("created")
+            response_available = response_data.get("available")
+            available_slots = response_data.get("available_slots")
 
             if response_data.get("available", False):
                 options = []
@@ -529,7 +224,7 @@ def bot_chat(request):
                     })
                 options.append({
                     "text": "Home",
-                    "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
                     "option_id": "home",
                 })
                 response = [response_message, *mappings.get("book_appointment_slots").get("title")]
@@ -551,12 +246,7 @@ def bot_chat(request):
             )
             response_message = response_data.get("message")
             if response_data.get("created"):
-                response = [
-                    response_message,
-                    *mappings.get("book_appointment_complete").get("title"),
-                ]
-                request.session["reschedule_appointment_id"] = None
-                del request.session["reschedule_appointment_id"]
+                response = [response_message, *mappings.get("book_appointment_complete").get("title")]
                 request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
                 options = list(mappings.get("home").get("options").values())
                 Appointment.objects.get(
@@ -564,12 +254,9 @@ def bot_chat(request):
                 ).delete()
             else:
                 if response_data.get("available", False):
-                    response = [
-                        response_message,
-                        *mappings.get("book_appointment_slot_error").get("title"),
-                    ]
+                    response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
                     request.session["next_action"] = "reschedule_appointment_book_with_slot"
-                    available_slots = response_data.get("available_slots", [])
+                    available_slots = response_data.get("available_slots")
                     options = []
                     for available_slot in available_slots:
                         options.append({
@@ -579,41 +266,252 @@ def bot_chat(request):
                         })
                     options.append({
                         "text": "Home",
-                        "class_list": "chat_option btn btn-sm btn-outline-secondary m-2",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
                         "option_id": "home",
                     })
                 else:
-                    response = [
-                        response_message,
-                        *mappings.get("book_appointment_unaviable").get("title"),
-                    ]
+                    response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
                     request.session["next_action"] = "reschedule_appointment_book"
                     options = []
-        else:
-            response = ["Falied to Process."]
-            options = []
-            if request.session.get("patient_id"):
+
+        elif request_selected_option == "register" or request_content.lower() == "register" or request_next_option == "register":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            request.session["register_patient_name"] = None
+            request.session["register_patient_phone"] = None
+            request.session["register_patient_dob"] = None
+            response = mappings.get("register").get("title")
+            request.session["next_action"] = mappings.get("register").get("next_action")
+
+        elif request_next_option == "register_dob":
+            try:
+                patientObj = Patient.objects.get(user__username = request_content)
+                response = ["User with name already Exists, Try different Name.", *mappings.get("register").get("title")]
+                request.session["next_action"] = mappings.get("register").get("next_action")
+            except Patient.DoesNotExist as err:
+                request.session["register_patient_name"] = request_content
+                response = mappings.get("register_dob").get("title")
+                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+
+        elif request_next_option == "register_phone" and request.session.get("register_patient_name"):
+            try:
+                patient_dobObj = datetime.strptime(request_content, "%d-%m-%Y")
+                request.session["register_patient_dob"] = request_content
+                response = mappings.get("register_phone").get("title")
+                request.session["next_action"] = mappings.get("register_phone").get("next_action")
+            except Exception as err:
+                print(f"{err=}")
+                request.session["register_patient_dob"] = None
+                response = ["Enter Date of Birth is Invalid.", *mappings.get("register_dob").get("title")]
+                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+
+        elif request_next_option == "register_check" and request.session.get("register_patient_dob"):
+            try:
+                patientObj = Patient.objects.get(phone_number = request_content)
+                response = ["User with phone number already Exists, Try different Phone Number.", *mappings.get("register_phone").get("title")]
+                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+            except Patient.DoesNotExist as err:
+                request.session["register_patient_phone"] = request_content
+                try:
+                    date_of_birthObj = datetime.strptime(request.session.get("register_patient_dob"), "%d-%m-%Y")  # "%Y-%m-%d"
+                    try:
+                        userObj = User.objects.get(username=request.session.get("register_patient_name"))
+                    except User.DoesNotExist as e:
+                        userObj = User.objects.create_user(
+                            username=request.session.get("register_patient_name"),
+                            email=None,
+                            password=request.session.get("register_patient_phone"),
+                        )
+                        userObj.save()
+                    try:
+                        patientObj = Patient.objects.get(user_id=userObj.id)
+                        request.session["register_patient_name"] = None
+                        request.session["register_patient_phone"] = None
+                        request.session["register_patient_dob"] = None
+                        response = mappings.get("register_failed").get("title")
+                        request.session["next_action"] = mappings.get("register_failed").get("next_action")
+                        options = list(mappings.get("register_failed").get("options").values())
+                    except Patient.DoesNotExist:
+                        patientObj = Patient.objects.create(
+                            user_id=userObj.id,
+                            date_of_birth=date_of_birthObj.date(),
+                            phone_number=request.session.get("register_patient_phone"),
+                        )
+                        response = mappings.get("register_success").get("title")
+                        request.session["next_action"] = mappings.get("register_success").get("next_action")
+                        options = list(mappings.get("register_success").get("options").values())
+                        request.session["register_patient_name"] = None
+                        request.session["register_patient_phone"] = None
+                        request.session["register_patient_dob"] = None
+                except Exception as err:
+                    request.session["register_patient_name"] = None
+                    request.session["register_patient_phone"] = None
+                    request.session["register_patient_dob"] = None
+                    response = mappings.get("register_failed").get("title")
+                    request.session["next_action"] = mappings.get("register_failed").get("next_action")
+                    options = list(mappings.get("register_failed").get("options").values())
+                
+
+        elif request_selected_option == "login" or request_content.lower() == "login" or request_next_option == "login":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            response = mappings.get("login").get("title")
+            request.session["next_action"] = mappings.get("login").get("next_action")
+        
+        elif request_selected_option == "home":
+            response = ["Select a Operation."]
+            options = list(mappings.get("home").get("options").values())
+            request.session["next_action"] = None
+
+        elif request_next_option == "home":
+            try:
+                patientObj = Patient.objects.get(id = int(request_content))
+                options, response = login_success(request, patientObj)
+            except Patient.DoesNotExist as err:
+                response = login_falied(request)
+            except ValueError as ve:
+                try:
+                    patientObj = Patient.objects.get(user__username = request_content)
+                    options, response = login_success(request, patientObj)
+                except Patient.DoesNotExist as err:
+                    response = login_falied(request)
+
+        elif request_content.lower() == "book appointment" or request_selected_option == "book_appointment":
+            response = mappings.get(request_selected_option).get("title")
+            request.session["next_action"] = mappings.get(request_selected_option).get("next_action")
+
+        elif request_next_option == "book_appointment_slots":
+            from dataStorage.views import book_appointment
+            response_data = book_appointment(
+                patient_info=request.session.get("patient_id"),
+                doctor_info=None,
+                appointment_date=request_content,
+            )
+            # print(f"{response_data=}")
+            response_message = response_data.get("message")
+            response_created = response_data.get("created")
+            response_available = response_data.get("available")
+            available_slots = response_data.get("available_slots")
+
+            if response_data.get("available", False):
+                options = []
+                for available_slot in available_slots:
+                    options.append({
+                        "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                    })
                 options.append({
                     "text": "Home",
-                    "class_list": "chat_option btn btn-sm btn-outline-secondary m-2 float-end",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
                     "option_id": "home",
                 })
+                response = [response_message, *mappings.get("book_appointment_slots").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
             else:
+                options = []
+                response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
+        
+        elif request_next_option == "book_appointment_with_slot":
+            # print(f"{request_next_option=}")
+            # print(f"{request_content=}, {request_selected_option=}")
+            from_slot, to_slot = request_selected_option.replace("_", " ").split("-") #12:15_PM-12:30_PM
+            from dataStorage.views import book_appointment
+            response_data = book_appointment(
+                patient_info=request.session.get("patient_id"),
+                doctor_info=None,
+                appointment_date=request_content,
+                appointment_from_time=from_slot,
+                appointment_to_time=to_slot,
+            )
+            response_message = response_data.get("message")
+            if response_data.get("created"):
+                response = [response_message, *mappings.get("book_appointment_complete").get("title")]
+                request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
+                options = list(mappings.get("home").get("options").values())
+            else:
+                if response_data.get("available", False):
+                    response = [response_message, *mappings.get("book_appointment_slot_error").get("title")]
+                    request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
+                    available_slots = response_data.get("available_slots")
+                    options = []
+                    for available_slot in available_slots:
+                        options.append({
+                            "text": f"{available_slot['from_time']} to {available_slot['to_time']}",
+                            "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                            "option_id": f"{available_slot['from_time'].replace(" ", "_")}-{available_slot['to_time'].replace(" ", "_")}",
+                        })
+                    options.append({
+                        "text": "Home",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": "home",
+                    })
+                else:
+                    response = [response_message, *mappings.get("book_appointment_unaviable").get("title")]
+                    request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
+                    options = []
+        
+        elif request_selected_option == "view_appointment":
+            appointmentObjs = Appointment.objects.filter(
+                patient_id = request.session.get("patient_id"),
+                status = "Active",
+            ).order_by("appointment_date")
+            response = [f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}" for appointmentObj in appointmentObjs]
+            if appointmentObjs.count() == 0:
+                response = ["No Appointment(s)."]
+            options = list(mappings.get("home").get("options").values())
+            request.session["next_action"] = None
+            # print(f"{request_next_option=}")
+            # print(f"{request_content=}, {request_selected_option=}")
+
+        elif request_selected_option == "cancel_appointment":
+            appointmentObjs = Appointment.objects.filter(
+                patient_id = request.session.get("patient_id"),
+                status = "Active",
+            ).order_by("appointment_date")
+            options = []
+            if appointmentObjs.count() == 0:
+                request.session["next_action"] = None
+                response = ["No Appointment(s)."]
+                options = list(mappings.get("home").get("options").values())
+            else:
+                request.session["next_action"] = "cancel_appointment_selected"
+                response = ["Select a Appointment to Cancel."]
+                for appointmentObj in appointmentObjs:
+                    options.append({
+                        "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
+                        "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                        "option_id": f"{appointmentObj.id}",
+                    })
                 options.append({
-                    "text": "Register",
-                    "class_list": "chat_option btn btn-sm btn-outline-success m-2 float-begin",
-                    "option_id": "register",
+                    "text": "Home",
+                    "class_list": "chat_option btn btn-sm btn-outline-info m-2",
+                    "option_id": "home",
                 })
-                options.append({
-                    "text": "Login",
-                    "class_list": "chat_option btn btn-sm btn-outline-info m-2 float-end",
-                    "option_id": "login",
-                })
+        
+        elif request_next_option == "cancel_appointment_selected":
+            # print(f"{request_next_option=}")
+            # print(f"{request_content=}, {request_selected_option=}")
+            appointmentObj = Appointment.objects.get(id = request_selected_option)
+            # appointmentObj.status = "Canceled"
+            # appointmentObj.save()
+            appointmentObj.delete()
+            response = ["Appointment Canceled."]
+            options = list(mappings.get("home").get("options").values())
+            request.session["next_action"] = None
+
+        elif request_selected_option == "logout":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            response = mappings.get("logout").get("title")
+            request.session["next_action"] = mappings.get("login").get("next_action")
+            options = list(mappings.get("logout").get("options").values())
 
         return JsonResponse(
             {
                 "message": f"{request.POST.get('content')}",
-                "response": response if response else ["Falied to Process."],
+                "response": response if response else ["hello"],
                 "options": options if options else [],
             },
             status=200,
