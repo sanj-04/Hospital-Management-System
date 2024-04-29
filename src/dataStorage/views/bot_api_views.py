@@ -164,7 +164,7 @@ def bot_chat(request):
             response = mappings.get("login").get("title")
             request.session["next_action"] = mappings.get("login").get("next_action")
 
-        elif request_next_option == "otp_verify":
+        elif request_next_option == "otp_verify" and request.session.get("patient_id"):
             verify_flag = verify_otp(request.session.get("patient_id"), request_content)
             if verify_flag:
                 response = mappings.get("home").get("title")
