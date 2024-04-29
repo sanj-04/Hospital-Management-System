@@ -57,6 +57,24 @@ function handleOpt(){
     // handleResults(tempObj.title,tempObj.options,tempObj.url);
 }
 
+function handleOuterOpt(ele){
+    btn_text = ele.getAttribute("data-text")
+    let outgoingChatLi = createChatLi(btn_text, "outgoing");
+    chatbox.appendChild(outgoingChatLi);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+    setTimeout(() => {
+        // Display "Thinking..." message while waiting for the response
+        const incomingChatLi = createChatLi("Thinking...", "incoming");
+        chatbox.appendChild(incomingChatLi);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+        generateResponse(incomingChatLi, option_id=ele.id);
+    }, 600);
+
+    document.querySelectorAll(".chat_option").forEach(el=>{
+        el.remove();
+    });
+}
+
 // const generateResponse = (chatElement) => {
 //     const API_URL = window.ApiUrl; //"https://api.openai.com/v1/chat/completions";
 //     const messageElement = chatElement.querySelector("p");

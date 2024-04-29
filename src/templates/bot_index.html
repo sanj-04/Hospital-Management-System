@@ -6,8 +6,18 @@
   <span class="material-symbols-outlined">close</span>
 </button>
 <div class="chatbot">
-  <header>
+  <header class="d-flex justify-content-around">
+    <div class="float-begin ml-5">
+      <button type="button" class="btn btn-sm btn-outline-info" id="home" data-text="Home" onclick="handleOuterOpt(this);">
+        <i class="bi bi-house-fill"></i>
+      </button>
+    </div>
     <h2>Chatbot</h2>
+    <div class="float-end mr-5">
+      <button type="button" class="btn btn-sm btn-outline-danger" id="logout" data-text="Logout" onclick="handleOuterOpt(this);">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
+    </div>
     <span class="close-btn material-symbols-outlined">close</span>
   </header>
   <ul class="chatbox">

@@ -196,7 +196,7 @@ mappings = {
   "logout": {
     "title": [
       {
-        "text": "Successfully Logout out.",
+        "text": "Successfully Logged Out.",
         "class_list": "",
       },
     ],

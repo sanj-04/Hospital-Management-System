@@ -170,11 +170,11 @@ def bot_chat(request):
         request_next_option = request.session.get("next_action")
         request_content = request.POST.get("content")
 
-        print(f"{request_selected_option=}")
-        print(f"{request_next_option=}")
-        print(f"{request_content=}")
+        # print(f"{request_selected_option=}")
+        # print(f"{request_next_option=}")
+        # print(f"{request_content=}")
 
-        if request_selected_option == "login" or request_content.lower() == "login":
+        if request_selected_option == "login" or request_content.lower() == "login" or request_next_option == "login":
             request.session["patient_id"] = None
             request.session["patient_name"] = None
             del request.session["patient_id"]
@@ -191,11 +191,19 @@ def bot_chat(request):
                 },]
                 options = list(mappings.get("home").get("options").values())
             else:
-                response = [{
-                    "text": "Please login.",
-                    "class_list": "",
-                },]
+                response = [
+                    {
+                        "text": "Please login.",
+                        "class_list": "",
+                    },
+                    *mappings.get("login").get("title"),
+                ]
+                request.session["patient_id"] = None
+                request.session["patient_name"] = None
+                del request.session["patient_id"]
+                del request.session["patient_name"]
                 options = None
+                request.session["next_action"] = "home"
 
         elif request_next_option == "home":
             try:
