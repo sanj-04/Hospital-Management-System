@@ -157,7 +157,7 @@ def login_success(request, patientObj):
     request.session["patient_id"] = patientObj.id
     request.session["patient_name"] = patientObj.user.username
     response = mappings.get("home").get("title")
-    response[0] = response[0].format(patient_name=request.session.get("patient_name"))
+    response[0]["text"] = response[0].get('text').format(patient_name=request.session.get("patient_name"))
     options = list(mappings.get("home").get("options").values())
     request.session["next_action"] = mappings.get("home").get("next_action", None)
     return options, response
@@ -170,9 +170,9 @@ def bot_chat(request):
         request_next_option = request.session.get("next_action")
         request_content = request.POST.get("content")
 
-        # print(f"{request_selected_option=}")
-        # print(f"{request_next_option=}")
-        # print(f"{request_content=}")
+        print(f"{request_selected_option=}")
+        print(f"{request_next_option=}")
+        print(f"{request_content=}")
 
         if request_selected_option == "login" or request_content.lower() == "login":
             request.session["patient_id"] = None
@@ -185,10 +185,16 @@ def bot_chat(request):
         elif request_selected_option == "home":
             request.session["next_action"] = None
             if request.session.get("patient_id"):
-                response = ["Select a Operation."]
+                response = [{
+                    "text": "Select a Operation.",
+                    "class_list": "",
+                },]
                 options = list(mappings.get("home").get("options").values())
             else:
-                response = ["Please login."]
+                response = [{
+                    "text": "Please login.",
+                    "class_list": "",
+                },]
                 options = None
 
         elif request_next_option == "home":
@@ -235,7 +241,10 @@ def bot_chat(request):
             try:
                 patientObj = Patient.objects.get(user__username = request_content)
                 response = [
-                    "User with name already Exists, Try different Name.",
+                    {
+                        "text": "User with name already Exists, Try different Name.",
+                        "class_list": "error",
+                    },
                     *mappings.get("register").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("register").get("next_action")
@@ -255,8 +264,12 @@ def bot_chat(request):
             except Exception as err:
                 print(f"{err=}")
                 request.session["register_patient_dob"] = None
+                del request.session["register_patient_dob"]
                 response = [
-                    "Entered Date of Birth is Invalid.",
+                    {
+                        "text": "Entered Date of Birth is Invalid.",
+                        "class_list": "error",
+                    },
                     *mappings.get("register_dob").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("register_dob").get("next_action")
@@ -265,10 +278,13 @@ def bot_chat(request):
             try:
                 patientObj = Patient.objects.get(phone_number = request_content)
                 response = [
-                    "User with phone number already Exists, Try different Phone Number.",
+                    {
+                        "text": "User with phone number already Exists, Try different Phone Number.",
+                        "class_list": "error",
+                    },
                     *mappings.get("register_phone").get("title"),
                 ]
-                request.session["next_action"] = mappings.get("register_dob").get("next_action")
+                request.session["next_action"] = mappings.get("register_phone").get("next_action")
             except Patient.DoesNotExist as err:
                 request.session["register_patient_phone"] = request_content
                 try:
@@ -354,14 +370,20 @@ def bot_chat(request):
                     "option_id": "home",
                 })
                 response = [
-                    response_message,
+                    {
+                        "text": response_message,
+                        "class_list": "",
+                    },
                     *mappings.get("book_appointment_slots").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("book_appointment_slots").get("next_action")
             else:
                 options = []
                 response = [
-                    response_message,
+                    {
+                        "text": response_message,
+                        "class_list": "",
+                    },
                     *mappings.get("book_appointment_unaviable").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
@@ -379,7 +401,10 @@ def bot_chat(request):
             response_message = response_data.get("message")
             if response_data.get("created"):
                 response = [
-                    response_message,
+                    {
+                        "text": response_message,
+                        "class_list": "",
+                    },
                     *mappings.get("book_appointment_complete").get("title"),
                 ]
                 request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
@@ -387,7 +412,10 @@ def bot_chat(request):
             else:
                 if response_data.get("available", False):
                     response = [
-                        response_message,
+                        {
+                            "text": response_message,
+                            "class_list": "",
+                        },
                         *mappings.get("book_appointment_slot_error").get("title"),
                     ]
                     request.session["next_action"] = mappings.get("book_appointment_slot_error").get("next_action")
@@ -406,7 +434,10 @@ def bot_chat(request):
                     })
                 else:
                     response = [
-                        response_message,
+                        {
+                            "text": response_message,
+                            "class_list": "",
+                        },
                         *mappings.get("book_appointment_unaviable").get("title"),
                     ]
                     request.session["next_action"] = mappings.get("book_appointment_unaviable").get("next_action")
@@ -417,9 +448,19 @@ def bot_chat(request):
                 patient_id = request.session.get("patient_id"),
                 status = "Active",
             ).order_by("appointment_date")
-            response = [f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}" for appointmentObj in appointmentObjs]
+            response = [
+                {
+                    "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
+                    "class_list": "",
+                } for appointmentObj in appointmentObjs
+            ]
             if appointmentObjs.count() == 0:
-                response = ["No Appointment(s)."]
+                response = [
+                    {
+                        "text": "No Appointment(s).",
+                        "class_list": "",
+                    },
+                ]
             options = list(mappings.get("home").get("options").values())
             request.session["next_action"] = None
 
@@ -431,11 +472,21 @@ def bot_chat(request):
             options = []
             if appointmentObjs.count() == 0:
                 request.session["next_action"] = None
-                response = ["No Appointment(s)."]
+                response = [
+                    {
+                        "text": "No Appointment(s).",
+                        "class_list": "",
+                    },
+                ]
                 options = list(mappings.get("home").get("options").values())
             else:
                 request.session["next_action"] = "cancel_appointment_selected"
-                response = ["Select a Appointment to Cancel."]
+                response = [
+                    {
+                        "text": "Select a Appointment to Cancel.",
+                        "class_list": "",
+                    },
+                ]
                 for appointmentObj in appointmentObjs:
                     options.append({
                         "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
@@ -454,9 +505,19 @@ def bot_chat(request):
                 # appointmentObj.status = "Canceled"
                 # appointmentObj.save()
                 appointmentObj.delete()
-                response = ["Appointment Canceled."]
+                response = [
+                    {
+                        "text": "Appointment Canceled.",
+                        "class_list": "",
+                    },
+                ]
             else:
-                response = ["Failed to Cancel Appointment."]
+                response = [
+                    {
+                        "text": "Failed to Cancel Appointment.",
+                        "class_list": "error",
+                    },
+                ]
             options = list(mappings.get("home").get("options").values())
             request.session["next_action"] = None
 
@@ -468,11 +529,21 @@ def bot_chat(request):
             ).order_by("appointment_date")
             
             if appointmentObjs.count() == 0:
-                response = ["No Appointment(s)."]
+                response = [
+                    {
+                        "text": "No Appointment(s).",
+                        "class_list": "",
+                    },
+                ]
                 options = list(mappings.get("home").get("options").values())
                 request.session["next_action"] = None
             else:
-                response = ["Select a Appointment to be Reschedule."]
+                response = [
+                    {
+                        "text": "Select a Appointment to be Reschedule.",
+                        "class_list": "",
+                    },
+                ]
                 options = [{
                     "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
                     "class_list": "chat_option btn btn-sm btn-outline-info m-2",
@@ -495,11 +566,21 @@ def bot_chat(request):
                 ).order_by("appointment_date")
                 
                 if appointmentObjs.count() == 0:
-                    response = ["No Appointment(s)."]
+                    response = [
+                        {
+                            "text": "No Appointment(s).",
+                            "class_list": "",
+                        },
+                    ]
                     options = list(mappings.get("home").get("options").values())
                     request.session["next_action"] = None
                 else:
-                    response = ["Select a Appointment to be Reschedule."]
+                    response = [
+                        {
+                            "text": "Select a Appointment to be Reschedule.",
+                            "class_list": "",
+                        },
+                    ]
                     options = [{
                         "text": f"{appointmentObj.appointment_date.strftime("%d-%B-%Y")} from {appointmentObj.from_time.strftime("%I:%M %p")} to {appointmentObj.to_time.strftime("%I:%M %p")}",
                         "class_list": "chat_option btn btn-sm btn-outline-info m-2",
@@ -513,7 +594,12 @@ def bot_chat(request):
                     request.session["next_action"] = "reschedule_appointment_book"
             else:
                 request.session["reschedule_appointment_id"] = request_selected_option
-                response = ["Provide New Appointment Date in DD-MM-YYYY format."]
+                response = [
+                    {
+                        "text": "Provide New Appointment Date in DD-MM-YYYY format.",
+                        "class_list": "",
+                    },
+                ]
                 request.session["next_action"] = "reschedule_appointment_book_slot"
 
         elif request_next_option == "reschedule_appointment_book_slot" and request.session.get("patient_id"):
@@ -542,14 +628,20 @@ def bot_chat(request):
                     "option_id": "home",
                 })
                 response = [
-                    response_message,
+                    {
+                        "text": response_message,
+                        "class_list": "",
+                    },
                     *mappings.get("book_appointment_slots").get("title"),
                 ]
                 request.session["next_action"] = "reschedule_appointment_book_with_slot"
             else:
                 options = []
                 response = [
-                    response_message,
+                    {
+                        "text": response_message,
+                        "class_list": "",
+                    },
                     *mappings.get("book_appointment_unaviable").get("title"),
                 ]
                 request.session["next_action"] = "reschedule_appointment_book"
@@ -567,20 +659,26 @@ def bot_chat(request):
             response_message = response_data.get("message")
             if response_data.get("created"):
                 response = [
-                    response_message,
+                    {
+                        "text": response_message,
+                        "class_list": "",
+                    },
                     *mappings.get("book_appointment_complete").get("title"),
                 ]
-                request.session["reschedule_appointment_id"] = None
-                del request.session["reschedule_appointment_id"]
                 request.session["next_action"] = mappings.get("book_appointment_complete").get("next_action")
                 options = list(mappings.get("home").get("options").values())
                 Appointment.objects.get(
-                    id = request.session.get("reschedule_appointment_id"),
+                    id = int(request.session.get("reschedule_appointment_id")),
                 ).delete()
+                request.session["reschedule_appointment_id"] = None
+                del request.session["reschedule_appointment_id"]
             else:
                 if response_data.get("available", False):
                     response = [
-                        response_message,
+                        {
+                            "text": response_message,
+                            "class_list": "",
+                        },
                         *mappings.get("book_appointment_slot_error").get("title"),
                     ]
                     request.session["next_action"] = "reschedule_appointment_book_with_slot"
@@ -599,13 +697,21 @@ def bot_chat(request):
                     })
                 else:
                     response = [
-                        response_message,
+                        {
+                            "text": response_message,
+                            "class_list": "",
+                        },
                         *mappings.get("book_appointment_unaviable").get("title"),
                     ]
                     request.session["next_action"] = "reschedule_appointment_book"
                     options = []
         else:
-            response = ["Falied to Process."]
+            response = [
+                {
+                    "text": "Falied to Process.",
+                    "class_list": "",
+                },
+            ]
             options = []
             if request.session.get("patient_id"):
                 options.append({

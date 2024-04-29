@@ -8,13 +8,16 @@ let userMessage = null; // Variable to store user's message
 const API_KEY = window.ApiKey;"PASTE-YOUR-API-KEY"; // Paste your API key here
 const inputInitHeight = chatInput.scrollHeight;
 
-const createChatLi = (message, className) => {
+const createChatLi = (message, className, class_list="") => {
     // Create a chat <li> element with passed message and className
     const chatLi = document.createElement("li");
     chatLi.classList.add("chat", `${className}`);
     let chatContent = className === "outgoing" ? `<p></p>` : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
     chatLi.innerHTML = chatContent;
     chatLi.querySelector("p").textContent = message;
+    if (class_list != "") {
+        chatLi.querySelector("p").classList.add(class_list);
+    }
     return chatLi; // return chat <li> element
 }
 
@@ -96,19 +99,25 @@ const generateResponse = (chatElement, option_id=null) => {
             xhr.setRequestHeader("X-CSRFToken", window.CsrfToken);
         },
         success : function(data,textMsg, xhr) {
-            console.log(data, data.response.length);
+            console.log(data.response, data.response.length);
             if (data.response.length > 1) {
                 data.response.forEach((element, index) => {
                     if (index == 0) {
-                        messageElement.textContent = element;
+                        messageElement.textContent = element.text;
+                        if (element.class_list != "") {
+                            messageElement.classList.add(element.class_list);
+                        }
                     } else {
-                        let incomingChatLi = createChatLi(element, "incoming");
+                        let incomingChatLi = createChatLi(element.text, "incoming", element.class_list);
                         chatbox.appendChild(incomingChatLi);
                         chatbox.scrollTo(0, chatbox.scrollHeight);
                     }
                 });
             } else {
-                messageElement.textContent = data.response;
+                messageElement.textContent = data.response[0].text;
+                if (data.response[0].class_list != "") {
+                    messageElement.classList.add(data.response[0].class_list);
+                }
             }
 
             console.log(data.options, data.options.length);

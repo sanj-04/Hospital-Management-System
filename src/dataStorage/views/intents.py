@@ -2,7 +2,10 @@ mappings = {
     
   "register": {
     "title": [
-      "Provide your Name.",
+      {
+        "text": "Provide your Name.",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "register_dob",
@@ -10,7 +13,10 @@ mappings = {
 
   "register_dob": {
     "title": [
-      "Provide your Date of Birth in DD-MM-YYYY format.",
+      {
+        "text": "Provide your Date of Birth in DD-MM-YYYY format.",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "register_phone",
@@ -18,7 +24,10 @@ mappings = {
 
   "register_phone": {
     "title": [
-      "Provide your Phone Number.",
+      {
+        "text": "Provide your Phone Number.",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "register_check",
@@ -26,7 +35,10 @@ mappings = {
 
   "register_success": {
     "title": [
-      "Patient Registered.",
+      {
+        "text": "Patient Registered.",
+        "class_list": "",
+      },
     ],
     "options": {
       "login": {
@@ -40,7 +52,10 @@ mappings = {
 
   "register_failed": {
     "title": [
-      "Patient Registertion Failed.",
+      {
+        "text": "Patient Registertion Failed.",
+        "class_list": "error",
+      },
     ],
     "options": {
       "register": {
@@ -54,7 +69,10 @@ mappings = {
 
   "login": {
     "title": [
-      "Provide your Name or ID.",
+      {
+        "text": "Provide your Name or ID.",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "home",
@@ -62,8 +80,14 @@ mappings = {
 
   "login_falied": {
     "title": [
-      "Provided Name or ID is not a Patient.",
-      "Provide your Name or ID.",
+      {
+        "text": "Provided Name or ID is not a Patient.",
+        "class_list": "error",
+      },
+      {
+        "text": "Provide your Name or ID.",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "login",
@@ -71,8 +95,14 @@ mappings = {
 
   "home": {
     "title": [
-      "Hello {patient_name},",
-      "How can I help you?",
+      {
+        "text": "Hello {patient_name},",
+        "class_list": "",
+      },
+      {
+        "text": "How can I help you?",
+        "class_list": "",
+      },
     ],
     "options": {
       "book_appointment": {
@@ -105,7 +135,10 @@ mappings = {
 
   "book_appointment": {
     "title": [
-      "Provide Appointment Date in DD-MM-YYYY format.",
+      {
+        "text": "Provide Appointment Date in DD-MM-YYYY format.",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "book_appointment_slots",
@@ -113,7 +146,10 @@ mappings = {
 
   "book_appointment_slots": {
     "title": [
-      "Select one from Avaliable slot(s).",
+      {
+        "text": "Select one from Avaliable slot(s).",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "book_appointment_with_slot",
@@ -121,8 +157,14 @@ mappings = {
 
   "book_appointment_slot_error": {
     "title": [
-      "Oops..!, Failed Book Appointment.",
-      "Select one from Avaliable slot(s).",
+      {
+        "text": "Oops..!, Failed Book Appointment.",
+        "class_list": "error",
+      },
+      {
+        "text": "Select one from Avaliable slot(s).",
+        "class_list": "",
+      },
     ],
     "options": {},
     "next_action": "book_appointment_with_slot",
@@ -130,7 +172,10 @@ mappings = {
 
   "book_appointment_unaviable": {
     "title": [
-      "Oops..!, Failed Book Appointment.",
+      {
+        "text": "Oops..!, Failed Book Appointment.",
+        "class_list": "error",
+      },
     ],
     "options": {},
     "next_action": "book_appointment",
@@ -138,7 +183,10 @@ mappings = {
 
   "book_appointment_complete": {
     "title": [
-      "Appointment Booked.",
+      {
+        "text": "Appointment Booked.",
+        "class_list": "",
+      },
     ],
     "options": {
       "home": "Go to Home.",
@@ -147,7 +195,10 @@ mappings = {
 
   "logout": {
     "title": [
-      "Successfully Logout out.",
+      {
+        "text": "Successfully Logout out.",
+        "class_list": "",
+      },
     ],
     "options": {
       "login": {
