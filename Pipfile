@@ -56,6 +56,7 @@ ulid-py = "==1.1.0"
 python-dotenv = "==1.0.1"
 mysqlclient = "==2.2.4"
 qrcode = {extras = ["pil"], version = "*"}
+vonage = "*"
 
 [dev-packages]
 xhtml2pdf = "*"

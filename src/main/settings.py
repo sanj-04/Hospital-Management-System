@@ -1,6 +1,9 @@
 import os, sys
 from pathlib import Path
 from .password import fetch
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -178,3 +181,8 @@ SECURE_HSTS_PRELOAD = True
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 XS_SHARING_ALLOWED_METHODS = ["GET"]  # ['POST','GET','OPTIONS', 'PUT', 'DELETE']
+
+vonage_key = os.getenv("vonage_key", 0)
+vonage_secret = os.getenv("vonage_secret", 0)
+phone_number = os.getenv("phone_number", 0)
+# print(f"{vonage_key=}, {vonage_secret=}, {phone_number=}")

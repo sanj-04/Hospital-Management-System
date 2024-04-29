@@ -5,10 +5,13 @@ from django.http.request import QueryDict
 from dataStorage.models import Patient, Token, Appointment
 from django.views.decorators.csrf import csrf_exempt
 import pyotp
+import vonage
 from base64 import b32encode
 from binascii import unhexlify
 from datetime import datetime
 from .intents import mappings
+from main.settings import vonage_key, vonage_secret
+from main.settings import phone_number as default_phone_number
 
 def get_token(hex_key, hop=None):
     secret = b32encode((unhexlify(hex_key))).decode("UTF-8")
@@ -100,6 +103,23 @@ request_mapping = {
     },
 }
 
+def send_sms(token_key, phone_number=default_phone_number):
+    client = vonage.Client(key=vonage_key, secret=vonage_secret)
+    sms = vonage.Sms(client)
+    responseData = sms.send_message(
+        {
+            "from": "Vonage APIs",# "MedIQ Clinic",
+            "to": phone_number,
+            "text": f"Verification Token {token_key} for Login.",
+        }
+    )
+
+    if responseData["messages"][0]["status"] == "0":
+        print(f"{responseData=}")
+        print("Message sent successfully.")
+    else:
+        print(f"Message failed with error: {responseData['messages'][0]['error-text']}")
+
 def generate_otp(patient_id):
     patientObj = Patient.objects.get(id=int(patient_id))
     token_key = get_token(patientObj.token_key, patientObj.hop_index)
@@ -111,6 +131,7 @@ def generate_otp(patient_id):
         hop_index = patientObj.hop_index,
     )
     phone_number = patientObj.phone_number
+    send_sms(token_key, phone_number=phone_number)
     phone_number = f"{phone_number[:2]}****{phone_number[6:]}"
     return token_key, phone_number
 
