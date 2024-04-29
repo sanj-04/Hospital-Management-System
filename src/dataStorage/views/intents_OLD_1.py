@@ -75,22 +75,7 @@ mappings = {
       },
     ],
     "options": {},
-    "next_action": "check_otp",
-  },
-
-  "check_otp": {
-    "title": [
-      {
-        "text": "OTP sent to {phone_number}.",
-        "class_list": "",
-      },
-      {
-        "text": "Enter the OTP to login.",
-        "class_list": "",
-      },
-    ],
-    "options": {},
-    "next_action": "otp_verify",
+    "next_action": "home",
   },
 
   "login_falied": {

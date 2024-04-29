@@ -100,34 +100,6 @@ request_mapping = {
     },
 }
 
-def generate_otp(patient_id):
-    patientObj = Patient.objects.get(id=int(patient_id))
-    token_key = get_token(patientObj.token_key, patientObj.hop_index)
-    patientObj.hop_index = patientObj.hop_index + 1
-    patientObj.save()
-    Token.objects.create(
-        patient=patientObj,
-        token_number=token_key,
-        hop_index = patientObj.hop_index,
-    )
-    phone_number = patientObj.phone_number
-    phone_number = f"{phone_number[:2]}****{phone_number[6:]}"
-    return token_key, phone_number
-
-def verify_otp(patient_id, token_key):
-    try:
-        patientObj = Patient.objects.get(id=int(patient_id))
-        tokenObj = Token.objects.get(
-            patient=patientObj,
-            is_active=True,
-            token_number=token_key,
-        )
-        tokenObj.is_active = False
-        tokenObj.save()
-        return True
-    except Exception as e:
-        return False
-
 def login_falied(request):
     request.session["patient_id"] = None
     request.session["patient_name"] = None
@@ -138,11 +110,11 @@ def login_falied(request):
 def login_success(request, patientObj):
     request.session["patient_id"] = patientObj.id
     request.session["patient_name"] = patientObj.user.username
-    token_key, phone_number = generate_otp(request.session.get("patient_id"))
-    response = mappings.get("check_otp").get("title")
-    response[0]["text"] = response[0].get("text").format(phone_number=phone_number)
-    request.session["next_action"] = mappings.get("check_otp").get("next_action")
-    return response
+    response = mappings.get("home").get("title")
+    response[0]["text"] = response[0].get('text').format(patient_name=request.session.get("patient_name"))
+    options = list(mappings.get("home").get("options").values())
+    request.session["next_action"] = mappings.get("home").get("next_action", None)
+    return options, response
 
 def bot_chat(request):
     if request.method == "POST" and request.is_ajax():
@@ -163,35 +135,6 @@ def bot_chat(request):
             del request.session["patient_name"]
             response = mappings.get("login").get("title")
             request.session["next_action"] = mappings.get("login").get("next_action")
-
-        elif request_next_option == "otp_verify":
-            verify_flag = verify_otp(request.session.get("patient_id"), request_content)
-            if verify_flag:
-                response = mappings.get("home").get("title")
-                response[0]["text"] = response[0].get('text').format(patient_name=request.session.get("patient_name"))
-                response = [
-                    *response,
-                    {
-                        "text": "Select a Operation.",
-                        "class_list": "",
-                    },
-                ]
-                request.session["next_action"] = "home"
-                options = list(mappings.get("home").get("options").values())
-            else:
-                response = [
-                    {
-                        "text": "Please login.",
-                        "class_list": "error",
-                    },
-                    *mappings.get("login").get("title"),
-                ]
-                request.session["patient_id"] = None
-                request.session["patient_name"] = None
-                del request.session["patient_id"]
-                del request.session["patient_name"]
-                options = None
-                request.session["next_action"] = "check_otp"
 
         elif request_selected_option == "home":
             request.session["next_action"] = None
@@ -214,18 +157,18 @@ def bot_chat(request):
                 del request.session["patient_id"]
                 del request.session["patient_name"]
                 options = None
-                request.session["next_action"] = "login"
+                request.session["next_action"] = "home"
 
-        elif request_next_option == "check_otp":
+        elif request_next_option == "home":
             try:
                 patientObj = Patient.objects.get(id = int(request_content))
-                response = login_success(request, patientObj)
+                options, response = login_success(request, patientObj)
             except Patient.DoesNotExist as err:
                 response = login_falied(request)
             except ValueError as ve:
                 try:
                     patientObj = Patient.objects.get(user__username = request_content)
-                    response = login_success(request, patientObj)
+                    options, response = login_success(request, patientObj)
                 except Patient.DoesNotExist as err:
                     response = login_falied(request)
 
@@ -728,7 +671,7 @@ def bot_chat(request):
             response = [
                 {
                     "text": "Falied to Process.",
-                    "class_list": "error",
+                    "class_list": "",
                 },
             ]
             options = []
@@ -753,10 +696,7 @@ def bot_chat(request):
         return JsonResponse(
             {
                 "message": f"{request.POST.get('content')}",
-                "response": response if response else [{
-                    "text": "Falied to Process.",
-                    "class_list": "error",
-                }],
+                "response": response if response else ["Falied to Process."],
                 "options": options if options else [],
             },
             status=200,
