@@ -58,6 +58,7 @@ class Patient(models.Model):
         default=default_key,
         help_text="A hex-encoded secret key of up to 40 bytes.",
     )
+    hop_index = models.PositiveIntegerField(null=True, blank=True, default=0)
 
     @property
     def age(self):
@@ -161,6 +162,7 @@ class Token(models.Model):
         Patient, related_name="patientTokenLink", on_delete=models.DO_NOTHING
     )
     token_number = models.CharField(max_length=8)
+    hop_index = models.PositiveIntegerField(null=True, blank=True, default=0)
     is_active = models.BooleanField(default=True)
     createTimestamp = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 

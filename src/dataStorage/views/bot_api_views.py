@@ -8,12 +8,13 @@ import pyotp
 from base64 import b32encode
 from binascii import unhexlify
 from datetime import datetime
+from .intents import mappings
 
 def get_token(hex_key, hop=None):
     secret = b32encode((unhexlify(hex_key))).decode("UTF-8")
     # totp = pyotp.TOTP(secret)
     # return totp.now()
-    hotp = pyotp.HOTP(secret)
+    hotp = pyotp.HOTP(secret, digits=8)
     return hotp.at(hop)
 
 # @login_required
@@ -29,10 +30,13 @@ def generate_token(request):
         if tokenObjs.count() > 0:
             token_key = tokenObjs[0].token_number
         if tokenObjs.count() == 0:
-            token_key = get_token(patientObj.token_key)
+            token_key = get_token(patientObj.token_key, patientObj.hop_index)
+            patientObj.hop_index = patientObj.hop_index + 1
+            patientObj.save()
             Token.objects.create(
                 patient=patientObj,
                 token_number=token_key,
+                hop_index = patientObj.hop_index,
             )
         return JsonResponse(
             {
@@ -95,56 +99,6 @@ request_mapping = {
         "function": "",
     },
 }
-
-# @csrf_exempt
-# def bot_chat(request):
-#     if request.method == "POST" and request.is_ajax():
-#         response = None
-#         request_content = request.POST.get('content')
-#         # request.session["patient_id"] = request.user.id
-#         # request.session["patient_name"] = request.user.username
-
-#         if request_content in ["Book Appointment"]:
-#             if request.session.get("patient_id") and request.session.get("patient_name"):
-#                 request.session["request"] = "get_appointment_date"
-#                 response = "Provide Appointment Date in DD-MM-YYYY format."
-#             else:
-#                 request.session["request"] = "get_patient_id"
-#                 response = "Provide Patient ID or Name."
-        
-#         elif type(request_content) in [type(1), type("a")] and request.session.get("request") == "get_patient_id":
-#             try:
-#                 patientObj = Patient.objects.get(id = int(request_content))
-#                 request.session["patient_id"] = patientObj.id
-#                 request.session["patient_name"] = patientObj.user.username
-#             except ValueError as ve:
-#                 patientObj = Patient.objects.get(user__username = request_content)
-#                 request.session["patient_id"] = patientObj.id
-#                 request.session["patient_name"] = patientObj.user.username
-#             except Exception as err:
-#                 request.session["request"] = "get_patient_id"
-#                 response = "Please Provide Patient ID or Name."
-        
-#         elif type(request_content) is type("a") and request.session.get("request") == "get_appointment_date":
-#             from dataStorage.views import book_appointment
-#             responseDict = book_appointment(
-#                 patient_info=request.session.get("patient_id"),
-#                 doctor_info=None,
-#                 appointment_date=request_content,
-#                 appointment_from_time=None,
-#                 appointment_to_time=None
-#             )
-#             response = responseDict.get("message")
-
-
-#         return JsonResponse(
-#             {
-#                 "message": f"{request.POST.get('content')}",
-#                 "response": response if response else "hello",
-#             },
-#             status=200,
-#         )
-from .intents import mappings
 
 def login_falied(request):
     request.session["patient_id"] = None
