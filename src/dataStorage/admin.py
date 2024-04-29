@@ -31,7 +31,20 @@ admin.site.register(Appointment, AppointmentAdmin)
 
 admin.site.register(Medicine)
 admin.site.register(Prescription)
-admin.site.register(Token)
+
+class TokenAdmin(admin.ModelAdmin):
+	list_display = ["__str__", "patient", "token_number", "hop_index", "is_active",]
+	list_display_links = ["__str__"]
+	# list_editable = ["price"]
+	list_filter = ["patient", "hop_index", "is_active"]
+	search_fields = ["patient"]
+	date_hierarchy = "createTimestamp"
+	raw_id_fields = ["patient"]
+
+	class Meta:
+		model = Token
+admin.site.register(Token, TokenAdmin)
+
 admin.site.register(Schedule)
 
 class SessionAdmin(admin.ModelAdmin):

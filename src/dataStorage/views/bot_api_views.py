@@ -168,7 +168,7 @@ def bot_chat(request):
             verify_flag = verify_otp(request.session.get("patient_id"), request_content)
             if verify_flag:
                 response = mappings.get("home").get("title")
-                response[0]["text"] = response[0].get('text').format(patient_name=request.session.get("patient_name"))
+                response[0]["text"] = response[0].get("text").format(patient_name=request.session.get("patient_name"))
                 response = [
                     *response,
                     {

@@ -105,7 +105,7 @@ mappings = {
       },
     ],
     "options": {},
-    "next_action": "login",
+    "next_action": "check_otp",
   },
 
   "home": {
