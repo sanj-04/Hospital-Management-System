@@ -789,12 +789,12 @@
         },
         "vonage": {
             "hashes": [
-                "sha256:1e82fa51b6d9d0af300b85f3ee25a3ef2f96c4f3ab753f20ba4b38e164b06db8",
-                "sha256:f84e74f4c2dd8c8f97bffecda9016d503de1d4b9df98efcbd6e7ddfb1a3359dc"
+                "sha256:2e0132d283e3b482313437e0ef1649a0571e689e03696a736e2ba602c1e4a0d7",
+                "sha256:a8bb9db1f88f3cf75106036813b6dce2367b7c89af7cfc0e1ad0586606a34ba0"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==3.13.0"
+            "version": "==3.13.1"
         },
         "vonage-jwt": {
             "hashes": [

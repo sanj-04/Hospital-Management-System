@@ -131,7 +131,8 @@ def generate_otp(patient_id):
         hop_index = patientObj.hop_index,
     )
     phone_number = patientObj.phone_number
-    send_sms(token_key, phone_number=phone_number)
+    # send_sms(token_key, phone_number=phone_number)
+    print(f"{token_key=}")
     phone_number = f"{phone_number[:2]}****{phone_number[6:]}"
     return token_key, phone_number
 
