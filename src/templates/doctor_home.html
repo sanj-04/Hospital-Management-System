@@ -229,6 +229,9 @@
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="schedule_list" data-bs-toggle="tab" data-bs-target="#schedule_tab">Schedule(s)</button>
   </li>
+  <button class="btn btn-sm" type="button" onclick="doctor_homeReload();">
+    <i class="fas fa-sync-alt" style="color: green;" id="homeReload"></i>
+  </button>
 </ul>
 <div class="tab-content" id="myTabContent">
   <div class="tab-pane fade show active" id="patient_tab" role="tabpanel" aria-labelledby="patient_tab">
@@ -764,6 +767,7 @@
     }
 
     function doctor_homeReload() {
+      document.getElementById('homeReload').classList.add('fa-spin');
       $.ajax({
           url : "{% url 'dataStorage:doctor_home' %}",
           type : "GET",
@@ -772,15 +776,18 @@
           success : function(HttpResponse, textMsg, xhr) {
             window.scrollTo(0, 0);
             reloadElements(HttpResponse.data);
+            document.getElementById('homeReload').classList.remove('fa-spin');
           },
           error : function(xhr, errmsg, err) {
             window.scrollTo(0, 0);
             location.reload();
+            document.getElementById('homeReload').classList.remove('fa-spin');
           },
           statusCode: {
             401: function() {
               window.scrollTo(0, 0);
               location.reload();
+              document.getElementById('homeReload').classList.remove('fa-spin');
             }
           }
       });
