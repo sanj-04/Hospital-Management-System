@@ -151,6 +151,8 @@ def book_appointment(patient_info, doctor_info, appointment_date, appointment_fr
             "from_time": slotObj.get("from_time").strftime("%I:%M %p"),
             "to_time": slotObj.get("to_time").strftime("%I:%M %p"),
             "slot_index": slotObj.get("slot_index"),
+            "from_time_obj": slotObj.get("from_time").strftime("%H:%M"),
+            "to_time_obj": slotObj.get("to_time").strftime("%H:%M"),
         } for slotObj in slotObjs.values()]
 
         # print(f"{available_slots=}")
@@ -317,6 +319,7 @@ def appointment_operation(request):
             {
                 "message": f"Failed to Create Appointment.",
                 "res_message": response.get("message"),
+                "available_slots": response.get("available_slots", []),
             },
             status=404,
         )
@@ -344,17 +347,33 @@ def appointment_operation(request):
         appointment_to_timeObj = datetime.strptime(appointment_to_time, "%H:%M")
 
         appointmentObj = Appointment.objects.get(id=appointment_id)
-        appointmentObj.appointment_date = appointment_dateObj
-        appointmentObj.from_time = appointment_from_timeObj
-        appointmentObj.to_time = appointment_to_timeObj
-        if appointment_status:
-            appointmentObj.status = appointment_status
-        appointmentObj.save()
+        response = book_appointment(
+            patient_info=appointmentObj.doctor.id,
+            doctor_info=appointmentObj.patient.id,
+            appointment_date=appointment_dateObj.strftime("%d-%m-%Y"),
+        )
+        if response.get("available_slots"):
+            for slot in response.get("available_slots"):
+                if slot.get("from_time_obj") == appointment_from_timeObj.strftime("%H:%M") and slot.get("to_time_obj") == appointment_to_timeObj.strftime("%H:%M"):
+                    appointmentObj.appointment_date = appointment_dateObj
+                    appointmentObj.from_time = appointment_from_timeObj
+                    appointmentObj.to_time = appointment_to_timeObj
+                    if appointment_status:
+                        appointmentObj.status = appointment_status
+                    appointmentObj.save()
+                    return JsonResponse(
+                        {
+                            "message": f"Updated Appointment {appointment_id} by {request.user.username}",
+                        },
+                        status=200,
+                    )
         return JsonResponse(
             {
-                "message": f"Updated Appointment {appointment_id} by {request.user.username}",
+                "message": f"Failed to Update Appointment.",
+                "res_message": response.get("message"),
+                "available_slots": response.get("available_slots", []),
             },
-            status=200,
+            status=404,
         )
 
     elif request.method == "DELETE" and request.is_ajax():

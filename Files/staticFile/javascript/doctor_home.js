@@ -250,6 +250,7 @@ function reloadElements(data) {
   data.appointments.forEach(appointment => {
     let newRowEle = addRow('appointment_table');
     newRowEle.classList.add('appointment');
+    newRowEle.id = "appointment_"+appointment.appointment_id;
 
     let newCellEle1 = newRowEle.insertCell();
     newCellEle1.innerText = appointment.patient_id;
@@ -264,12 +265,12 @@ function reloadElements(data) {
 
     let newCellEle4 = newRowEle.insertCell();
     newCellEle4.innerHTML = `<span name="span_appointment_from_time_update">`+appointment.appointment_from_time_str+`</span>
-    <input type="time" name="id_appointment_from_time_update" class="form-control"
+    <input type="time" name="id_appointment_from_time_update" class="form-control from"
     hidden value="`+appointment.appointment_from_time+`"></input>`;
 
     let newCellEle5 = newRowEle.insertCell();
     newCellEle5.innerHTML = `<span name="span_appointment_to_time_update">`+appointment.appointment_to_time_str+`</span>
-    <input type="time" name="id_appointment_to_time_update" class="form-control"
+    <input type="time" name="id_appointment_to_time_update" class="form-control to"
     hidden value="`+appointment.appointment_to_time+`"></input>`;
 
     let options = '';
@@ -296,7 +297,7 @@ function reloadElements(data) {
     data-patient_id="`+appointment.patient_id+`"
     data-appointment_id="`+appointment.appointment_id+`">Update</button>
     <button onclick="confirmAppointmentDelete(this);" data-appointment_id="`+appointment.appointment_id+`" class="btn btn-sm btn-danger">Delete</button>
-    <button onclick="updateAppointmentRow(this);" class="btn btn-sm btn-success" hidden>Done</button>
+    <button onclick="updateAppointmentRow(this, 'appointment_`+appointment.appointment_id+`');" class="btn btn-sm btn-success" hidden>Done</button>
     <button onclick="cancelAppointmentUpdate(this);" class="btn btn-sm btn-secondary" hidden>Cancel</button>`;
   });
 
@@ -346,4 +347,35 @@ function reloadElements(data) {
   patients_listEle.innerHTML = patients_options;
 
   datepicker_operation(data.unavailable);
+}
+
+function populateSlots(available_slots) {
+  let slot_text = '';
+  available_slots.forEach((ele, index) => {
+    slot_text += `<div class="col-3 m-2">
+      <div class="input-group">
+        <div class="input-group-text">
+          <input class="form-check-input mt-0" type="radio" name="slot" id="radio_`+ele.slot_index+`"
+          data-from="`+ele.from_time_obj+`" data-to="`+ele.to_time_obj+`" data-index="`+ele.slot_index+`">
+        </div>
+        <span class="input-group-text">
+          <label for="radio_`+ele.slot_index+`">`+ele.from_time+` to `+ele.to_time+`</label>
+        </span>
+      </div>
+    </div>`;
+  });
+  let slotModalBodyDiv = document.getElementById("select_appointment_slotModalBody");
+  slotModalBodyDiv.innerHTML = slot_text;
+  if (available_slots.length != 0) {
+    $('#select_appointment_slot').modal('show');
+  }
+}
+
+function selectAppointmentSlot(row_id) {
+  let slotModalBodyDiv = document.getElementById("select_appointment_slotModalBody");
+  let slotChecked = slotModalBodyDiv.querySelector('input[type="radio"]:checked');
+  rowEle = document.getElementById(row_id);
+  rowEle.querySelector(".from").value = slotChecked.getAttribute("data-from");
+  rowEle.querySelector(".to").value = slotChecked.getAttribute("data-to");
+  $('#select_appointment_slot').modal('hide');
 }

@@ -155,6 +155,26 @@
   </div>
 </div>
 
+<div class="modal fade" id="select_appointment_slot" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-xl ui-front" role="document">
+    <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
+      <div class="modal-body">
+        <div class="card border-dark mb-3">
+          <div class="card-header">
+            Select Appointment Slot
+            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="card-body row" id="select_appointment_slotModalBody"></div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="$('#select_appointment_slot').modal('hide');">Close</button>
+            <button type="button" class="btn btn-success float-right" onclick="selectAppointmentSlot();" id="selectAppointment">Select Appointment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <ul class="nav nav-tabs" id="myTab" role="tablist">
   <li class="nav-item" role="presentation">
     <button class="nav-link active" id="patient_list" data-bs-toggle="tab" data-bs-target="#patient_tab">Patient Details</button>
@@ -214,7 +234,7 @@
       </thead>
       <tbody id="appointment_tableBody">
         {% for appointment in appointments %}
-        <tr class="appointment">
+        <tr class="appointment" id="appointment_{{appointment.appointment_id}}">
           <td>{{appointment.patient_id}}</td>
           <td>{{appointment.patient_name}}</td>
           <td>
@@ -225,12 +245,12 @@
           <td>
             <span name="span_appointment_from_time_update">{{appointment.appointment_from_time_str}}</span>
             <input type="time" name="id_appointment_from_time_update"
-              class="form-control" hidden value="{{appointment.appointment_from_time}}"></input>
+              class="form-control from" hidden value="{{appointment.appointment_from_time}}"></input>
           </td>
           <td>
             <span name="span_appointment_to_time_update">{{appointment.appointment_to_time_str}}</span>
             <input type="time" name="id_appointment_to_time_update"
-              class="form-control" hidden value="{{appointment.appointment_to_time}}"></input>
+              class="form-control to" hidden value="{{appointment.appointment_to_time}}"></input>
           </td>
           <td>
             <span name="span_appointment_status_update">{{appointment.appointment_status}}</span>
@@ -243,13 +263,16 @@
               data-patient_id="{{appointment.patient_id}}"
               data-appointment_id="{{appointment.appointment_id}}">Update</button>
             <button onclick="confirmAppointmentDelete(this);" data-appointment_id="{{appointment.appointment_id}}" class="btn btn-sm btn-danger">Delete</button>
-            <button onclick="updateAppointmentRow(this);" class="btn btn-sm btn-success" hidden>Done</button>
+            <button onclick="updateAppointmentRow(this, 'appointment_{{appointment.appointment_id}}');" class="btn btn-sm btn-success" hidden>Done</button>
             <button onclick="cancelAppointmentUpdate(this);" class="btn btn-sm btn-secondary" hidden>Cancel</button>
           </td>
         </tr>
         {% endfor %}
-        <tr>
-          <td colspan="2">
+        <tr id="appointment_insert">
+          <td>
+            <span name="span_appointment_patient_id_insert">{{patient.id}}</span>
+          </td>
+          <td>
             <span name="span_appointment_patient_insert">{{patient.name}}</span>
             <input type="hidden" name="patient" autocomplete="off" class="textinput textInput form-control" id="id_appointment_patient_insert" value="{{patient.id}}">
           </td>
@@ -257,10 +280,10 @@
             <input type="text" id="id_appointment_date_insert" class="datepicker_single form-control" autocomplete="off">
           </td>
           <td>
-            <input type="time" id="id_appointment_from_time_insert" class="form-control">
+            <input type="time" id="id_appointment_from_time_insert" class="form-control from">
           </td>
           <td>
-            <input type="time" id="id_appointment_to_time_insert" class="form-control">
+            <input type="time" id="id_appointment_to_time_insert" class="form-control to">
           </td>
           <td colspan="2" class="text-center">
             <button onclick="insertAppointmentRow(this);" class="btn btn-outline-primary">Insert Appointment</button>
@@ -318,7 +341,7 @@
       });
     }
 
-    function insertAppointmentRow() {
+    function insertAppointmentRow(ele) {
       let appointment_patient = document.getElementById('id_appointment_patient_insert').value;
       let appointment_date = document.getElementById('id_appointment_date_insert').value;
       let appointment_from_time = document.getElementById('id_appointment_from_time_insert').value;
@@ -350,6 +373,9 @@
           window.scrollTo(0, 0);
           try {
             notify_message(xhr.responseJSON.res_message, 'danger');
+            populateSlots(xhr.responseJSON.available_slots);
+            row_id = ele.parentNode.parentNode.getAttribute("id");
+            document.getElementById("selectAppointment").setAttribute("onclick", "selectAppointmentSlot('"+row_id+"');");
           } catch (error) {
             alert('Please fill in all fields.');
           }
@@ -363,7 +389,7 @@
       });
     }
 
-    function updateAppointmentRow(button) {
+    function updateAppointmentRow(button, row_id) {
       let tableRow = button.parentNode.parentNode;
       let appointment_date = tableRow.querySelector('[name="id_appointment_date_update"]').value;
       let appointment_from_time = tableRow.querySelector('[name="id_appointment_from_time_update"]').value;
@@ -390,7 +416,17 @@
         error : function(xhr, errmsg, err) {
           console.log(xhr);
           window.scrollTo(0, 0);
-          alert("Patient ID not found. Unable to update the row.");
+          try {
+            notify_message(xhr.responseJSON.res_message, 'danger');
+          } catch (error) {
+            alert('Please fill in all fields.');
+          }
+          try {
+            populateSlots(xhr.responseJSON.available_slots);
+            document.getElementById("selectAppointment").setAttribute("onclick", "selectAppointmentSlot('"+row_id+"');");
+          } catch (error) {
+            console.error("error", error);
+          }
         },
         statusCode: {
           401: function() {
