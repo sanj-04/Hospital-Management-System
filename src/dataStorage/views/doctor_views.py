@@ -5,11 +5,15 @@ from dataStorage.models import Patient, Appointment, Medicine, Schedule, Doctor
 from dataStorage.forms import PatientForm
 from dataStorage.models import status_choices, schedule_status_choices
 from django.db.models import Q
-from datetime import datetime, time
+from datetime import datetime, date
+from .common import check_schedule
 
 @login_required
 # @user_passes_test(lambda u: u.is_staff)
 def doctor_home(request):
+    date_obj = date.today()# date(day=31, month=5, year=2024)
+    check_schedule(request, date_obj)
+
     if not request.user.is_staff:
         return redirect('dataStorage:home')
 
