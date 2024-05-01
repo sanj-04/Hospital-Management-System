@@ -166,6 +166,39 @@
   </div>
 </div>
 
+<div class="modal fade" id="modifyPatient" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg ui-front" role="document">
+    <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
+      <div class="modal-body">
+        <div class="card border-dark mb-3">
+          <div class="card-header">
+            Modify Patient Detail
+            <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="card-body" id="modifyPatientModalBody">
+            <div class='col-md-12'>
+              <div id="div_id_patient" class="mb-3">
+                <label for="id_patient" class="form-label requiredField">
+                  Patient Name<span class="asteriskField">*</span>
+                </label>
+                <input type="text" name="patient" class="textinput form-control" required="" id="id_patient" value="{{patient.name}}" readonly>
+              </div>
+            </div>
+            <div class="row">
+              <div class='col-md-6'>{{ patientForm.date_of_birth | as_crispy_field }}</div>
+              <div class='col-md-6'>{{ patientForm.phone_number | as_crispy_field }}</div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal" onclick="$('#modifyPatient').modal('hide');">Close</button>
+            <button type="button" class="btn btn-success float-right" onclick="modifyPatientDetail();">Modify Patient</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="select_appointment_slot" tabindex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-xl ui-front" role="document">
     <div class="modal-content" style='background-color:rgb(255,255,255,0); border:0px'>
@@ -225,16 +258,21 @@
             <li class="list-group-item border border-dark">
               <div class="row">
                   <div class="col-4">
-                    <strong>Patient Name: </strong><span id="patient_info_name"></span>
+                    <strong>Name: </strong><span id="patient_info_name"></span>
                   </div>
                   <div class="col-5">
-                    <strong>Patient Age: </strong><span id="patient_info_age"></span>
-                  </div>
-                  <div class="col-2">
-                    <strong>Patient ID: </strong><span id="patient_info_id"></span>
+                    <strong>Age: </strong><span id="patient_info_age"></span>
                   </div>
                   <div class="col-1">
-                    <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPrescriptionModal').modal('show')">
+                    <strong>ID: </strong><span id="patient_info_id"></span>
+                  </div>
+                  <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-primary float-end" id="patient_btn_id" onclick="modifyPatient(this);">
+                      <i class="fas fa-pencil"></i>
+                    </button>
+                  </div>
+                  <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-primary float-end" onclick="$('#addPrescriptionModal').modal('show');">
                       <i class="fas fa-plus"></i>
                     </button>
                   </div>
@@ -418,9 +456,10 @@
     });
 
     function addPatientDetail() {
-      let patient_name = document.getElementById('id_patient').value;
-      let date_of_birth = document.getElementById('id_date_of_birth').value;
-      let phone_number = document.getElementById('id_phone_number').value;
+      let divEle = document.getElementById('addPatientModalBody');
+      let patient_name = divEle.querySelector('#id_patient').value;
+      let date_of_birth = divEle.querySelector('#id_date_of_birth').value;
+      let phone_number = divEle.querySelector('#id_phone_number').value;
       $.ajax({
         url : "{% url 'dataStorage:patient_operation' %}",
         type : "POST",
@@ -438,9 +477,9 @@
           window.scrollTo(0, 0);
           $('#addPatient').modal('hide');
           doctor_homeReload();
-          document.getElementById('id_patient').value = "";
-          document.getElementById('id_date_of_birth').value = "";
-          document.getElementById('id_phone_number').value = "";
+          divEle.querySelector('#id_patient').value = "";
+          divEle.querySelector('#id_date_of_birth').value = "";
+          divEle.querySelector('#id_phone_number').value = "";
         },
         error : function(xhr, errmsg, err) {
           console.log(xhr);
@@ -469,6 +508,7 @@
         success : function(HttpResponse, textMsg, xhr) {
           notify_message(HttpResponse.message, 'info');
           window.scrollTo(0, 0);
+          document.getElementById("patient_btn_id").setAttribute("data-patient_id", patient_id);
           populatePrescriptions(HttpResponse.prescriptions);
         },
         error : function(xhr, errmsg, err) {
@@ -829,6 +869,68 @@
             }
           });
         });
+      });
+    }
+
+    function modifyPatient(ele) {
+      let patient_id = ele.getAttribute("data-patient_id");
+      $.ajax({
+        url : "{% url 'dataStorage:patient_info' %}",
+        type : "GET",
+        data : {
+          "patient_id": patient_id,
+        },
+        beforeSend: function (xhr) {},
+        success : function(HttpResponse, textMsg, xhr) {
+          window.scrollTo(0, 0);
+          let divEle = document.getElementById('modifyPatientModalBody');
+          divEle.querySelector('#id_patient').value = HttpResponse.patient.name;
+          divEle.querySelector('#id_date_of_birth').value = HttpResponse.patient.date_of_birth;
+          divEle.querySelector('#id_phone_number').value = HttpResponse.patient.phone_number;
+          $('#modifyPatient').modal('show');
+        },
+        error : function(xhr, errmsg, err) {
+          window.scrollTo(0, 0);
+          location.reload();
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
+      });
+    }
+
+    function modifyPatientDetail() {
+      let divEle = document.getElementById('modifyPatientModalBody');
+      let patient_name = divEle.querySelector('#id_patient').value;
+      let date_of_birth = divEle.querySelector('#id_date_of_birth').value;
+      let phone_number = divEle.querySelector('#id_phone_number').value;
+      $.ajax({
+        url : "{% url 'dataStorage:patient_info' %}",
+        type : "POST",
+        data : {
+          "patient_name": patient_name,
+          "date_of_birth": date_of_birth,
+          "phone_number": phone_number,
+          "csrfmiddlewaretoken": "{{ csrf_token }}",
+        },
+        beforeSend: function (xhr) {},
+        success : function(HttpResponse, textMsg, xhr) {
+          window.scrollTo(0, 0);
+          $('#modifyPatient').modal('hide');
+        },
+        error : function(xhr, errmsg, err) {
+          window.scrollTo(0, 0);
+          location.reload();
+        },
+        statusCode: {
+          401: function() {
+            window.scrollTo(0, 0);
+            location.reload();
+          }
+        }
       });
     }
   </script>

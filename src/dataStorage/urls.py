@@ -25,6 +25,7 @@ urlpatterns = [
 
     path("doctor_home", views.doctor_home, name="doctor_home"),
     path("patient_home", views.patient_home, name="patient_home"),
+    path("patient_info", views.patient_info, name="patient_info"),
     path("patient_operation", views.patient_operation, name="patient_operation"),
     path("appointment_operation", views.appointment_operation, name="appointment_operation"),
     path("schedule_operation", views.schedule_operation, name="schedule_operation"),

@@ -157,3 +157,47 @@ def patient_operation(request):
                 },
                 status=404,
             )
+
+@login_required
+def patient_info(request):
+    if request.method == "GET" and request.is_ajax() and request.user.is_staff:
+        patient_id = request.GET.get("patient_id")
+        patientObj = Patient.objects.get(id = patient_id)
+        patient = {
+            "id": patientObj.id,
+            "name": patientObj.user.username,
+            "age": patientObj.age,
+            "date_of_birth": patientObj.date_of_birth.strftime("%d-%b-%Y"),
+            "phone_number": patientObj.phone_number,
+        }
+        return JsonResponse(
+            {
+                "message": f"Fetched Patient ({patient_id}) info by {request.user.username}",
+                "patient": patient,
+            },
+            status=200,
+        )
+
+    elif request.method == "POST" and request.is_ajax() and request.user.is_staff:
+        try:
+            patient_name = request.POST.get("patient_name")
+            date_of_birth = request.POST.get("date_of_birth")
+            date_of_birthObj = datetime.strptime(date_of_birth, "%d-%b-%Y")  # "%Y-%m-%d"
+            phone_number = request.POST.get("phone_number")
+            patientObj = Patient.objects.get(user__username = patient_name)
+            patientObj.date_of_birth = date_of_birthObj
+            patientObj.phone_number = phone_number
+            patientObj.save()
+            return JsonResponse(
+                {
+                    "message": f"Updated patient {patient_name} by {request.user.username}",
+                },
+                status=200,
+            )
+        except Exception as err:
+            return JsonResponse(
+                {
+                    "message": f"Failed to Update patient {patient_name} by {request.user.username}",
+                },
+                status=404,
+            )
