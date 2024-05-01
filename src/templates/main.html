@@ -2,6 +2,12 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block styles %}
+.social-icon:hover {
+  color: #007bff;
+}
+{% endblock styles %}
+
 {% block content %}
 <div id="carousel" class="carousel slide" data-bs-ride="carousel">
   <div class="carousel-inner">
@@ -139,19 +145,19 @@
   <div class="card">
     <h5 class="card-header text-center">Socials</h5>
     <div class="card-body">
-      <div class="row">
+      <div class="row social-icon">
         <span class="col-2"><i class="fab fa-facebook-f"></i></span>
         <span class="col-10">name@domain.com</span>
       </div>
-      <div class="row">
+      <div class="row social-icon">
         <span class="col-2"><i class="fab fa-instagram"></i></span>
         <span class="col-10">name@domain.com</span>
       </div>
-      <div class="row">
+      <div class="row social-icon">
         <span class="col-2"><i class="fab fa-whatsapp"></i></span>
         <span class="col-10">name@domain.com</span>
       </div>
-      <div class="row">
+      <div class="row social-icon">
         <span class="col-2"><i class="fab fa-twitter"></i></span>
         <span class="col-10">name@domain.com</span>
       </div>
