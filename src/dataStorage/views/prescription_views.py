@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
+from django.http.request import QueryDict
 from django.template.loader import get_template
 from dataStorage.models import Prescription, Doctor, Patient
 from main.settings import MEDIA_ROOT as media_root
@@ -92,7 +93,7 @@ def process_prescription(prescription_id, request=None, mode="html"):
 
     context = {
         "hospital_name": "Meera Gastro Centre ",
-        "address": "Meera Gastro Centre , Jayashree Hospital , Near City Centre Mall, KS Rao Road, Mangaluru, Karnataka, India, 575001",
+        "address": "Meera Gastro Centre , Jayashree Hospital , Near City Centre Mall,\nKS Rao Road, Mangaluru, Karnataka, India, 575001",
         "phone": "088487 66904,",
         "email": "Hospital Email",
         "patient_name": prescriptionObj.patient.user.username,
@@ -166,6 +167,18 @@ def prescription_operation(request):
             {
                 "message": f"Added Prescription of {patient_id} by {request.user.username}",
                 "prescription_id": prescriptionObj.id,
+            },
+            status=200,
+        )
+    
+    elif request.method == "DELETE" and request.is_ajax() and request.user.is_staff:
+        prescription_id = QueryDict(request.body).get("prescription_id")
+        prescriptionObj = Prescription.objects.get(id=prescription_id)
+        prescriptionObj.is_active = False
+        prescriptionObj.save()
+        return JsonResponse(
+            {
+                "message": f"Prescription Deleted {prescription_id} by {request.user.username}",
             },
             status=200,
         )
