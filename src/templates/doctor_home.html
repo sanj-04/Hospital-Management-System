@@ -921,7 +921,8 @@
         beforeSend: function (xhr) {},
         success : function(HttpResponse, textMsg, xhr) {
           window.scrollTo(0, 0);
-          document.getElementById("patient_"+patient_id).click();
+          let patientObj = document.getElementById("patient_"+patient_id);
+          patientObj.click();
           $('#modifyPatient').modal('hide');
         },
         error : function(xhr, errmsg, err) {
