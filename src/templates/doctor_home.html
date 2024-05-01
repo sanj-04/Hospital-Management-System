@@ -175,7 +175,7 @@
             Modify Patient Detail
             <button type="button" class="btn-close float-end" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="card-body" id="modifyPatientModalBody">
+          <div class="card-body" id="modifyPatientModalBody" data-patient_id="">
             <div class='col-md-12'>
               <div id="div_id_patient" class="mb-3">
                 <label for="id_patient" class="form-label requiredField">
@@ -884,6 +884,7 @@
         success : function(HttpResponse, textMsg, xhr) {
           window.scrollTo(0, 0);
           let divEle = document.getElementById('modifyPatientModalBody');
+          divEle.setAttribute('data-patient_id', patient_id);
           divEle.querySelector('#id_patient').value = HttpResponse.patient.name;
           divEle.querySelector('#id_date_of_birth').value = HttpResponse.patient.date_of_birth;
           divEle.querySelector('#id_phone_number').value = HttpResponse.patient.phone_number;
@@ -904,6 +905,7 @@
 
     function modifyPatientDetail() {
       let divEle = document.getElementById('modifyPatientModalBody');
+      let patient_id = divEle.getAttribute("data-patient_id");
       let patient_name = divEle.querySelector('#id_patient').value;
       let date_of_birth = divEle.querySelector('#id_date_of_birth').value;
       let phone_number = divEle.querySelector('#id_phone_number').value;
@@ -919,6 +921,7 @@
         beforeSend: function (xhr) {},
         success : function(HttpResponse, textMsg, xhr) {
           window.scrollTo(0, 0);
+          document.getElementById("patient_"+patient_id).click();
           $('#modifyPatient').modal('hide');
         },
         error : function(xhr, errmsg, err) {
