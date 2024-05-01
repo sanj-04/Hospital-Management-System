@@ -92,9 +92,9 @@ def process_prescription(prescription_id, request=None, mode="html"):
     qrCode = base64.b64encode(qrCodeBytes).decode('utf-8')
 
     context = {
-        "hospital_name": "Hospital Name",
-        "address": "Hospital Address",
-        "phone": "Hospital Phone",
+        "hospital_name": "Meera Gastro Centre ",
+        "address": "Meera Gastro Centre , Jayashree Hospital , Near City Centre Mall,\nKS Rao Road, Mangaluru, Karnataka, India, 575001",
+        "phone": "088487 66904,",
         "email": "Hospital Email",
         "patient_name": prescriptionObj.patient.user.username,
         "patient_id": prescriptionObj.patient.id,
