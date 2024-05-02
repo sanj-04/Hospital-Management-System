@@ -188,7 +188,7 @@ class Schedule(models.Model):
 
     class Meta:
         db_table = "schedules"
-        unique_together = ("schedule_month_year", "doctor")
+        # unique_together = ("schedule_month_year", "doctor")
         managed = True
 
     @property
