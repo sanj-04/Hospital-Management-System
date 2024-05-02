@@ -8,7 +8,7 @@
 #         return func(request, *args, **kwargs)
 #     return wrapper
 
-from dataStorage.models import Schedule
+from dataStorage.models import Schedule, Doctor
 from datetime import date
 import calendar
 
@@ -27,6 +27,7 @@ def get_next_month_and_year(date_obj):
         return date_obj.month, date_obj.strftime("%B"), date_obj.year
     
 def check_schedule(request, date_obj):
+    doctorObj = Doctor.objects.get(user=request.user.id)
     if is_last_five_days(date_obj):
         next_month, next_month_name, next_year = get_next_month_and_year(date_obj)
         schedule_exists = Schedule.objects.filter(
@@ -39,7 +40,7 @@ def check_schedule(request, date_obj):
         if not schedule_exists:
             try:
                 Schedule.objects.create(
-                    doctor__user__id=request.user.id,
+                    doctor=doctorObj,
                     schedule_month_year=date(day=1, month=next_month, year=next_year),
                     schedule_json={
                         "rejected_days": [],
@@ -59,7 +60,7 @@ def check_schedule(request, date_obj):
         if not schedule_exists:
             try:
                 Schedule.objects.create(
-                    doctor__user__id=request.user.id,
+                    doctor=doctorObj,
                     schedule_month_year=date(day=1, month=date_obj.month, year=date_obj.year),
                     schedule_json={
                         "rejected_days": [],

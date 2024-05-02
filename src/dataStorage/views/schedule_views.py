@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.http.request import QueryDict
-from dataStorage.models import Schedule
+from dataStorage.models import Schedule, Doctor
 from datetime import datetime
 
 
@@ -30,9 +30,9 @@ def schedule_operation(request):
         schedule_json = {
             "rejected_days": schedule_days_list,
         }
-
+        doctorObj = Doctor.objects.get(user=request.user.id)
         Schedule.objects.create(
-            doctor__user__id=request.user.id,
+            doctor=doctorObj,
             schedule_month_year=schedule_monthObj,
             schedule_json=schedule_json,
             status=schedule_status,
