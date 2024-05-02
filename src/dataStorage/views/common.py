@@ -31,6 +31,7 @@ def check_schedule(request, date_obj):
     if is_last_five_days(date_obj):
         next_month, next_month_name, next_year = get_next_month_and_year(date_obj)
         schedule_exists = Schedule.objects.filter(
+            doctor=doctorObj,
             schedule_month_year = date(
                 day=1,
                 month=next_month,
@@ -51,6 +52,7 @@ def check_schedule(request, date_obj):
                 print(f"{err=}")
     else:
         schedule_exists = Schedule.objects.filter(
+            doctor=doctorObj,
             schedule_month_year = date(
                 day=1,
                 month=date_obj.month,

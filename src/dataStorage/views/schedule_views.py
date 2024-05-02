@@ -10,7 +10,11 @@ def schedule_operation(request):
     if request.method == "POST" and request.is_ajax() and request.user.is_staff:
         schedule_month = request.POST.get("schedule_month")
         schedule_monthObj = datetime.strptime(schedule_month, "%Y-%m")
-        schedule_exists = Schedule.objects.filter(schedule_month_year = schedule_monthObj).exists()
+        doctorObj = Doctor.objects.get(user_id=request.user.id)
+        schedule_exists = Schedule.objects.filter(
+            doctor = doctorObj,
+            schedule_month_year = schedule_monthObj
+        ).exists()
         if schedule_exists:
             return JsonResponse(
                 {
@@ -30,13 +34,20 @@ def schedule_operation(request):
         schedule_json = {
             "rejected_days": schedule_days_list,
         }
-        doctorObj = Doctor.objects.get(user_id=request.user.id)
-        Schedule.objects.create(
-            doctor=doctorObj,
-            schedule_month_year=schedule_monthObj,
-            schedule_json=schedule_json,
-            status=schedule_status,
-        )
+        try:
+            Schedule.objects.create(
+                doctor=doctorObj,
+                schedule_month_year=schedule_monthObj,
+                schedule_json=schedule_json,
+                status=schedule_status,
+            )
+        except Exception:
+            return JsonResponse(
+                {
+                    "message": f"Failed to Create Schedule {schedule_month} by {request.user.username}",
+                },
+                status=404,
+            )
         return JsonResponse(
             {
                 "message": f"Created Schedule {schedule_month} by {request.user.username}",
