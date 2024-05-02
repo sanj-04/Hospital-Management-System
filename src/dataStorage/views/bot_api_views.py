@@ -238,6 +238,22 @@ def bot_chat(request):
                 options = None
                 request.session["next_action"] = "check_otp"
 
+        elif request_selected_option == "register" or request_content.lower() == "register":
+            request.session["patient_id"] = None
+            request.session["patient_name"] = None
+            request.session["register_patient_name"] = None
+            request.session["register_patient_phone"] = None
+            request.session["register_patient_dob"] = None
+            request.session["reschedule_appointment_id"] = None
+            del request.session["patient_id"]
+            del request.session["patient_name"]
+            del request.session["register_patient_name"]
+            del request.session["register_patient_phone"]
+            del request.session["register_patient_dob"]
+            del request.session["reschedule_appointment_id"]
+            response = mappings.get("register").get("title")
+            request.session["next_action"] = mappings.get("register").get("next_action")
+
         elif request_next_option == "check_otp":
             try:
                 patientObj = Patient.objects.get(id = int(request_content))
@@ -267,22 +283,6 @@ def bot_chat(request):
             response = mappings.get("logout").get("title")
             request.session["next_action"] = mappings.get("login").get("next_action")
             options = list(mappings.get("logout").get("options").values())
-        
-        elif request_selected_option == "register" or request_content.lower() == "register":
-            request.session["patient_id"] = None
-            request.session["patient_name"] = None
-            request.session["register_patient_name"] = None
-            request.session["register_patient_phone"] = None
-            request.session["register_patient_dob"] = None
-            request.session["reschedule_appointment_id"] = None
-            del request.session["patient_id"]
-            del request.session["patient_name"]
-            del request.session["register_patient_name"]
-            del request.session["register_patient_phone"]
-            del request.session["register_patient_dob"]
-            del request.session["reschedule_appointment_id"]
-            response = mappings.get("register").get("title")
-            request.session["next_action"] = mappings.get("register").get("next_action")
             
         elif request_next_option == "register_dob":
             request.session["register_patient_name"] = None
