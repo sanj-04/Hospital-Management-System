@@ -48,11 +48,11 @@
         <li class="nav-item">
           <form action="{% url 'auth_logout' %}" method="post">
             {% csrf_token %}
-            <button type="submit" class="nav-link btn btn-dark"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            <button type="submit" class="nav-link btn "><i class="bi bi-box-arrow-right"></i> Logout</button>
           </form>
         </li>
         {% else %}
-        <li class="nav-item">
+        <li class="nav-item" hidden>
           <a class="nav-link" href="{% url 'registration_register' %}"><i class="bi bi-person-plus-fill"></i> Register</a>
         </li>
         {% endif %}
