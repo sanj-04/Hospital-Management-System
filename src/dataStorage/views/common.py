@@ -45,3 +45,20 @@ def check_schedule(request, date_obj):
                 },
                 status="Active",
             )
+    else:
+        schedule_exists = Schedule.objects.filter(
+            schedule_month_year = date(
+                day=1,
+                month=date_obj.month,
+                year=date_obj.year,
+            )
+        ).exists()
+        if not schedule_exists:
+            Schedule.objects.create(
+                doctor_id=request.user.id,
+                schedule_month_year=date(day=1, month=date_obj.month, year=date_obj.year),
+                schedule_json={
+                    "rejected_days": [],
+                },
+                status="Active",
+            )
