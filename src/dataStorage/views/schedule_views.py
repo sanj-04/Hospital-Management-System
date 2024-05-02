@@ -30,7 +30,7 @@ def schedule_operation(request):
         schedule_json = {
             "rejected_days": schedule_days_list,
         }
-        doctorObj = Doctor.objects.get(user=request.user.id)
+        doctorObj = Doctor.objects.get(user_id=request.user.id)
         Schedule.objects.create(
             doctor=doctorObj,
             schedule_month_year=schedule_monthObj,

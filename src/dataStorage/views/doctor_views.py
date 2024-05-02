@@ -20,7 +20,7 @@ def doctor_home(request):
     if request.method == "GET" and request.user.is_staff:
         patientObjs = Patient.objects.all()
         medicineObjs = Medicine.objects.all()
-        doctorObj = Doctor.objects.get(user=request.user.id)
+        doctorObj = Doctor.objects.get(user_id=request.user.id)
         scheduleObjs = Schedule.objects.filter(doctor=doctorObj)
         current_datetime = datetime.now()
         appointmentObjs = Appointment.objects.filter(

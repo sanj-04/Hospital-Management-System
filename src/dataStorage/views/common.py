@@ -27,7 +27,7 @@ def get_next_month_and_year(date_obj):
         return date_obj.month, date_obj.strftime("%B"), date_obj.year
     
 def check_schedule(request, date_obj):
-    doctorObj = Doctor.objects.get(user=request.user.id)
+    doctorObj = Doctor.objects.get(user_id=request.user.id)
     if is_last_five_days(date_obj):
         next_month, next_month_name, next_year = get_next_month_and_year(date_obj)
         schedule_exists = Schedule.objects.filter(
