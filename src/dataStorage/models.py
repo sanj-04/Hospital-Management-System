@@ -175,7 +175,7 @@ class Token(models.Model):
 
 
 class Schedule(models.Model):
-    schedule_month_year = models.DateField(blank=False, null=False, unique=True)
+    schedule_month_year = models.DateField(blank=False, null=False)# , unique=True
     doctor = models.ForeignKey(
         Doctor, related_name="doctorScheduleLink", on_delete=models.DO_NOTHING
     )
@@ -188,6 +188,7 @@ class Schedule(models.Model):
 
     class Meta:
         db_table = "schedules"
+        unique_together = ("schedule_month_year", "doctor")
         managed = True
 
     @property
