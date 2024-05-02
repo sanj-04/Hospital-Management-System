@@ -37,14 +37,17 @@ def check_schedule(request, date_obj):
             )
         ).exists()
         if not schedule_exists:
-            Schedule.objects.create(
-                doctor_id=request.user.id,
-                schedule_month_year=date(day=1, month=next_month, year=next_year),
-                schedule_json={
-                    "rejected_days": [],
-                },
-                status="Active",
-            )
+            try:
+                Schedule.objects.create(
+                    doctor__user__id=request.user.id,
+                    schedule_month_year=date(day=1, month=next_month, year=next_year),
+                    schedule_json={
+                        "rejected_days": [],
+                    },
+                    status="Active",
+                )
+            except Exception as err:
+                print(f"{err=}")
     else:
         schedule_exists = Schedule.objects.filter(
             schedule_month_year = date(
@@ -56,7 +59,7 @@ def check_schedule(request, date_obj):
         if not schedule_exists:
             try:
                 Schedule.objects.create(
-                    doctor_id=request.user.id,
+                    doctor__user__id=request.user.id,
                     schedule_month_year=date(day=1, month=date_obj.month, year=date_obj.year),
                     schedule_json={
                         "rejected_days": [],

@@ -32,7 +32,7 @@ def schedule_operation(request):
         }
 
         Schedule.objects.create(
-            doctor_id=request.user.id,
+            doctor__user__id=request.user.id,
             schedule_month_year=schedule_monthObj,
             schedule_json=schedule_json,
             status=schedule_status,
