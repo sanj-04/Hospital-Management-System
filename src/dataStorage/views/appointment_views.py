@@ -347,6 +347,20 @@ def appointment_operation(request):
         appointment_to_timeObj = datetime.strptime(appointment_to_time, "%H:%M")
 
         appointmentObj = Appointment.objects.get(id=appointment_id)
+        if (
+            appointmentObj.from_time == appointment_from_timeObj.time()
+            and appointmentObj.to_time == appointment_to_timeObj.time()
+            and appointmentObj.appointment_date == appointment_dateObj.date()
+        ):
+            appointmentObj.status = appointment_status
+            appointmentObj.save()
+            return JsonResponse(
+                {
+                    "message": f"Updated Appointment {appointment_id} by {request.user.username}",
+                },
+                status=200,
+            )
+        
         response = book_appointment(
             patient_info=appointmentObj.doctor.id,
             doctor_info=appointmentObj.patient.id,
