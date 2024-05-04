@@ -11,6 +11,24 @@
 from dataStorage.models import Schedule, Doctor
 from datetime import date
 import calendar
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import login
+
+def login_required_tm(func):
+    def wrapper(request, *args, **kwargs):
+        if not request.is_ajax():
+            try:
+                token = request.headers.get('Authorization').split(' ')[1]
+                tokenObj = Token.objects.get(key = token)
+                # print(f"{token=}, {tokenObj.user=}")
+                login(request, tokenObj.user)
+                return func(request, *args, **kwargs)
+            except Token.DoesNotExist:
+                pass
+            except AttributeError as ae:
+                print(f"{ae=}")
+        # return func(request, *args, **kwargs)
+    return wrapper
 
 def is_last_five_days(date_obj):
     last_day = calendar.monthrange(date_obj.year, date_obj.month)[1]

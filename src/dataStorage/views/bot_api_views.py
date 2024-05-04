@@ -12,6 +12,7 @@ from datetime import datetime
 from .intents import mappings
 from main.settings import vonage_key, vonage_secret
 from main.settings import phone_number as default_phone_number
+from .common import login_required_tm
 
 def get_token(hex_key, hop=None):
     secret = b32encode((unhexlify(hex_key))).decode("UTF-8")
@@ -20,8 +21,9 @@ def get_token(hex_key, hop=None):
     hotp = pyotp.HOTP(secret, digits=8)
     return hotp.at(hop)
 
-# @login_required
 @csrf_exempt
+@login_required_tm
+@login_required
 def generate_token(request):
     if request.method == "POST":  # and request.is_ajax():
         patient_id = request.POST.get("patient_id")
